@@ -6,7 +6,7 @@ Oats~i is an open and extensible web framework that allows you to create web app
 
 You can install Oats~i using the cli (recommended) or manually
 
-### Using the cli    [![oats~i cli](https://img.shields.io/badge/npm-v_1.0.1-blue)](https://www.npmjs.com/package/oats-i-cli)
+### Using the cli    [![oats~i cli](https://img.shields.io/badge/npm-v_1.0.2-blue)](https://www.npmjs.com/package/oats-i-cli)
 
 Navigate to the folder you want to create an Oats~i project.
 
