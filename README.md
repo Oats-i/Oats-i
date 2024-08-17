@@ -1,4 +1,4 @@
-# Oats~i    [![npm](https://img.shields.io/badge/npm-v_0.7.2-blue)](https://www.npmjs.com/package/oats-i)    [![license](https://img.shields.io/badge/license-MPL_2.0-green)](https://github.com/Oats-i/Oats-i?tab=MPL-2.0-1-ov-file)
+# Oats~i    [![npm](https://img.shields.io/badge/npm-v_0.7.3-blue)](https://www.npmjs.com/package/oats-i)    [![license](https://img.shields.io/badge/license-MPL_2.0-green)](https://github.com/Oats-i/Oats-i?tab=MPL-2.0-1-ov-file)
 
 Oats~i is an open and extensible web framework that allows you to create web apps using simple technologies.
 
@@ -6,7 +6,7 @@ Oats~i is an open and extensible web framework that allows you to create web app
 
 You can install Oats~i using the cli (recommended) or manually
 
-### Using the cli    [![oats~i cli](https://img.shields.io/badge/npm-v_1.0.2-blue)](https://www.npmjs.com/package/oats-i-cli)
+### Using the cli    [![oats~i cli](https://img.shields.io/badge/npm-v_1.0.3-blue)](https://www.npmjs.com/package/oats-i-cli)
 
 Navigate to the folder you want to create an Oats~i project.
 
@@ -17,6 +17,12 @@ npx oats-i-cli
 ```
 
 Follow the prompts
+
+#### Run the starter app
+
+```
+npm run dev
+```
 
 ### Manually
 
