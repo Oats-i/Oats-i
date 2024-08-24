@@ -81,10 +81,29 @@ class StandardRemoteRequestUtils{
             }
             if(requestOptions.reqHeaders){
     
-                if(requestOptions.reqHeaders.authorization){
+                let authorizationSet = false;
+                //Added last bit to handle situations where authorization value is provided differently
+                if(requestOptions.reqHeaders.authorization && !requestOptions.reqHeaders.dontPrependBearer){
     
+                    authorizationSet = true;
                     xhReq.setRequestHeader("Authorization", "Bearer " + requestOptions.reqHeaders.authorization);
                 }
+                
+                for(const header in requestOptions.reqHeaders){
+
+                    if(header === "authorization" && authorizationSet){
+
+                    } else {
+
+                        xhReq.setRequestHeader(header, requestOptions.reqHeaders[header]);
+                    }
+                }
+            }
+
+            //set reponse type
+            if(requestOptions.responseType){
+
+                xhReq.responseType = requestOptions.responseType;
             }
     
             /**
@@ -178,8 +197,6 @@ class StandardRemoteRequestUtils{
      */
     onRequestError(objRef, cb){ //e, - had this, but not binding to event correctly
 
-        console.warn("OBJ REF");
-        console.log(objRef);
         if(objRef.isFragmentRunning()){
 
             objRef.popRemoteReqEntryFromActive(this);
@@ -218,15 +235,7 @@ class StandardRemoteRequestUtils{
             this.activeRequests.splice(index, 1);
         } else {
 
-            // try{
-
-            //     throw new Error(`${StandardRemoteRequestUtils._REMOTE_REQUEST_ERROR}: Cannot abort request with id ${id}. Not found`);
-            // } catch(err){
-
-            //     console.log(err);
-            // }
-
-            console.log(`${StandardRemoteRequestUtils._REMOTE_REQUEST_ERROR}: Cannot abort request with id ${id}. Not found`);
+            // console.log(`${StandardRemoteRequestUtils._REMOTE_REQUEST_ERROR}: Cannot abort request with id ${id}. Not found`);
         }
     }
 

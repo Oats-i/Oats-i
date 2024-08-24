@@ -138,8 +138,6 @@ class AppStateManager{
 
             currentState = this.generateBaseAppState(document.title, window.location.pathname);
         }
-        console.log("normalizing history stack. Currently in state");
-        console.log(currentState);
         if(currentState.stackEntry !== null && currentState.stackEntry !== undefined){
 
             this.currentStackEntry = currentState.stackEntry;

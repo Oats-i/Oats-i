@@ -97,7 +97,6 @@ class MainRouter{
      */
     routeToAppLaunchRoute(newHistoryState, replaceCurrentState) {
 
-        console.log("Are we replacing state? " + replaceCurrentState);
         const routeStateInfo = this.routeToView({ state: newHistoryState }, true);
         if(replaceCurrentState){
 
@@ -137,7 +136,6 @@ class MainRouter{
     routeToView(args, byPassRouting, failCb){
 
         let fullURL = args.state ? args.state.pageUrl : args.fullURL;
-        console.log("ROUTING TRIGGERED " + fullURL);
         let targetRouteEntry = this.getTargetRouteEntryForBaseRoute(fullURL);
 
         if(!targetRouteEntry){
@@ -226,7 +224,6 @@ class MainRouter{
      */
     routeToPoppedView(movingBack){
 
-        console.error("TRYING TO CONFIRM POP. Moving " + (movingBack ? "back" : "forwards"));
         if(movingBack){
 
             this.appStateManager.polyfillPreviousState();

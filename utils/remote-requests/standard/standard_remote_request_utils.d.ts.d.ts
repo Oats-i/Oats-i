@@ -32,17 +32,20 @@ declare module "StandardRemoteRequestUtils" {
 
     type RequestOptions = {
         
-        reqMethod: "POST" | "GET",
+        reqMethod: "POST" | "GET" | "PUT" | "DELETE" | "HEAD" | "PATCH" | "TRACE" | "CONNECT",
         reqAddress: string, 
         contentType?: "application/json" | "application/x-www-form-urlencoded" | "multipart/form-data",
         reqBody?: Document | XMLHttpRequestBodyInit,
         reqHeaders?: RequestHeaders,
         processAbort?: boolean //True means you want to handle aborts
+        responseType?: "arraybuffer" | "blob" | "document" | "json" | "text";
     };
 
     type RequestHeaders = {
 
-        authorization: string
+        authorization?: string,
+        dontPrependBearer?: boolean,
+        [x: string]: string
     };
 
     type remoteReqSuccessCb<T> = (status: number, T: response) => void;

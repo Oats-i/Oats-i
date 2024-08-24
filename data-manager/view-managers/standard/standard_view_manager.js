@@ -640,7 +640,7 @@ class StandardViewManager {
 
             if(this.attachedModels.length === 0){
 
-                console.error(`No attached model to invoking child view managers. Probably been flushed. Affected mappedDataId: ${mappedDataId}`);
+                // console.error(`No attached model to invoking child view managers. Probably been flushed. Affected mappedDataId: ${mappedDataId}`);
             } else {
 
                 //might be a flush all or delete all (delete_FlushAll) event (probably affecting this scope, so next calls will fall into first block). Therefore, all attached models are going. Those don't pass a mappedDataId
