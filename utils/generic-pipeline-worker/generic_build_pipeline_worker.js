@@ -542,7 +542,7 @@ class GenericBuildPipelineWorker{
                             this.transitionPipelineState(cbArgs.buildArgs);
                         } else {
 
-                            console.warn("Build finished. No nextTransitionKey defined");
+                            // console.warn("Build finished. No nextTransitionKey defined");
                             //Call final cb: can attach this directly to the main pipeline cb. Have optional params generic function, to cater for if you'll ever need params
                             if(cbArgs.buildArgs.completeCb){
 
