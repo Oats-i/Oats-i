@@ -30,6 +30,11 @@ Check the installation tutorial in the "Build a web app with Oats~i" series
 
 https://dev.to/oatsi/build-a-web-app-with-oatsi-setting-up-53al
 
+## Documentation
+I'm currently working on the official site for Oats~i where we'll have full documentation for the framework. However, you can already start building and testing using it through the series of tutorials I'm releasing over at dev.to (https://dev.to/oatsi) and YouTube (https://www.youtube.com/@Oatsi). Those videos, and the more I'll be adding, should already get you started.
+
+Once the official site and documentation drops, I'll update that here.
+
 ## About Oats~i
 
 https://dev.to/oatsi/introducing-oatsi-the-open-web-framework-2ehp
