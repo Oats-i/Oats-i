@@ -1,0 +1,35 @@
+{
+  "name": "oats-i",
+  "version": "0.7.4",
+  "description": "An open web framework for building web apps",
+  "main": "./bin/app_root.js",
+  "bin": {
+    "oats-i": "./bin/app_root.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Oats-i/Oats-i.git"
+  },
+  "keywords": [
+    "Oats~i",
+    "javascript",
+    "javascript",
+    "frameworks",
+    "webapps"
+  ],
+  "author": "Ian Omondi",
+  "contributors": [
+    {
+      "name": "Ian Omondi",
+      "url": "https://github.com/Ian-Cornelius"
+    }
+  ],
+  "license": "SEE LICENSE IN LICENSE",
+  "bugs": {
+    "url": "https://github.com/Oats-i/Oats-i/issues"
+  },
+  "homepage": "https://github.com/Oats-i/Oats-i#readme"
+}

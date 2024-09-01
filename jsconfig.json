@@ -1,0 +1,7 @@
+// Configuring to access types better
+{
+    "include": [
+        "*/**/*.js",
+        "**/*"
+    ],
+}
