@@ -7,7 +7,8 @@
     "oats-i": "./bin/app_root.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs":"jsdoc -c .config/jsdoc.json -r"
   },
   "repository": {
     "type": "git",
