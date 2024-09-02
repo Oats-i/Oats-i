@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils/abstract-data-types/queue/queue.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: utils/abstract-data-types/queue/queue.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//@ts-check
+/**
+ * @template T
+ */
+class Queue {
+
+    constructor(){
+
+        /**
+         * @type {Array&lt;T>}
+         */
+        this.myQueue = [];
+        this.queueHead = 0;
+        this.queueTail =  0;
+
+        //Head never changes
+        Object.freeze(this.queueHead);
+    }
+
+    /**
+     * @type {QueueInstance&lt;T>['enqueue']}
+     */
+    enqueue(item){
+
+        //Adding to end, so using tail
+        this.myQueue[this.queueTail++] = item;
+    }
+
+    /**
+     * 
+     * @type {QueueInstance&lt;T>['dequeue']}
+     */
+    dequeue(){
+
+        if(!this.isEmpty()){
+
+            //Removing from head of queue
+            const item =  this.myQueue[this.queueHead];
+            //Remove
+            this.myQueue.splice(this.queueHead, 1);
+            //Update queue tail
+            this.queueTail--;
+            return item;
+        }
+
+        return undefined;
+    }
+
+    /**
+     * @type {QueueInstance&lt;T>['peek']}
+     */
+    peek(){
+
+        return this.myQueue[this.queueHead];
+    }
+
+    /**
+     * Get the value at the tail of the queue
+     * @type {QueueInstance&lt;T>['tail']}
+     */
+    tail(){
+
+        return this.myQueue[this.queueTail - 1];
+    }
+
+    /**
+     * @type {QueueInstance&lt;T>['clear']}
+     */
+    clear(){
+
+        while(!this.isEmpty()){
+            
+            this.dequeue();
+        }
+    }
+
+    /**
+     * @type {QueueInstance&lt;T>['forEach']}
+     */
+    forEach(cb){
+
+        const queueCopy = this.copy();
+        //It's an active update. So, get original and save
+        const length = queueCopy.length;
+        for(let i = 0; i &lt; length; i++){
+
+            if(cb(queueCopy.dequeue())){
+                
+                break;
+            };
+        }
+    }
+
+    /**
+     * Joins the provided queue to the end of the queue in this instance
+     * @type {QueueInstance&lt;T>['join']}
+     */
+    join(queue){
+
+        const copyQueue = queue.copy();
+        copyQueue.forEach((item) => {
+
+            this.enqueue(item);
+        });
+    }
+
+    /**
+     * @type {QueueInstance&lt;T>['copy']}
+     */
+    copy(){
+
+        /**
+         * @type {Queue&lt;T>}
+         */
+        const queueCopy = new Queue();
+        queueCopy.myQueue = this.myQueue.map((item) => item);
+        //Tail update
+        queueCopy.queueTail = this.queueTail;
+        return queueCopy
+    }
+
+    /**
+     * 
+     * @type {QueueInstance&lt;T>['position']} 
+     */
+    position(item){
+
+        let position = null;
+        const queueCopy = this.copy();
+        //Using this.length to ensure value doesn't change
+        //Hopefully referenced once and that's it. Not continuous get, since change
+        //Will affect other algos
+        for(let i = 0; i &lt; this.length; i++){
+
+            if(queueCopy.dequeue() === item){
+
+                position = i;
+                break;
+            }
+        }
+
+        return position;
+    }
+
+    /**
+     * Using algo below to avoid touching this.myQueue directly and have heads and tails update correctly
+     * Less buggy
+     * @type {QueueInstance&lt;T>['sortDelete']} 
+     */
+    sortDelete(item){
+
+        /**
+         * @type {QueueInstance&lt;T>}
+         */
+        const sortedQueue = new Queue();
+        //Put in FIFO order unaffected items in sorted queue from this queue
+        //FIFO respected in both, so will be fine
+        const length = this.length;
+        for(let i = 0; i &lt; length; i++){
+
+            const queueItem = this.dequeue();
+            if(queueItem !== item){
+
+                sortedQueue.enqueue(queueItem);
+            }
+        }
+
+        //Now return back to this queue
+        sortedQueue.forEach((queueItem) => {
+
+            this.enqueue(queueItem);
+        });
+    }
+
+    /**
+     * Deletes the item at the given position then resets the items after
+     * 
+     * @type {QueueInstance&lt;T>['deleteAtPos']}
+     */
+    deleteAtPos(pos){
+
+        /**
+         * @type {Queue&lt;T>}
+         */
+        const filteredQueue = new Queue();
+        /**
+         * @type {T}
+         */
+        let deletedItem = null;
+        this.forEach((item, index) => {
+
+            if(index !== pos){
+
+                filteredQueue.enqueue(item);
+            } else {
+
+                deletedItem = item;
+            }
+        });
+
+        this.clear();
+        filteredQueue.forEach((item) => {
+
+            this.enqueue(item);
+        });
+        filteredQueue.clear();
+
+        return deletedItem;
+    }
+
+    /**
+     * 
+     * @type {QueueInstance&lt;T>['find']}
+     */
+    find(checkFn){
+
+        const copyQueue = this.copy();
+        let match = null;
+        const length = this.length;
+        for(let i = 0; i &lt; length; i++){
+
+            if(checkFn(copyQueue.peek())){
+
+                match = copyQueue.dequeue();
+                break;
+            }
+
+            copyQueue.dequeue();
+        }
+
+        return match;
+    }
+
+    /**
+     * @type {QueueInstance&lt;T>['length']}
+     */
+    get length(){
+
+        return this.queueTail - this.queueHead;
+    }
+
+    /**
+     * 
+     * @returns {boolean}
+     */
+    isEmpty(){
+
+        return this.length === 0;
+    }
+}
+
+if(false){
+
+    /**
+     * @type {QueueConstructor&lt;*>}
+     */
+    const QueueTest = Queue;
+}
+
+export default Queue;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AppChildFragment.html">AppChildFragment</a></li><li><a href="AppFragmentBuilder.html">AppFragmentBuilder</a></li><li><a href="AppMainFragment.html">AppMainFragment</a></li><li><a href="AppShellAsyncChildFragment.html">AppShellAsyncChildFragment</a></li><li><a href="AppShellAsyncMainFragment.html">AppShellAsyncMainFragment</a></li><li><a href="AppStateManager.html">AppStateManager</a></li><li><a href="AsyncAppFragmentBuilder.html">AsyncAppFragmentBuilder</a></li><li><a href="AsyncShellLocalPipelineWorker.html">AsyncShellLocalPipelineWorker</a></li><li><a href="AttributesTransitionsWorker.html">AttributesTransitionsWorker</a></li><li><a href="BaseDataPipelineWorker.html">BaseDataPipelineWorker</a></li><li><a href="DataManager.html">DataManager</a></li><li><a href="DeleteDataPipelineWorker.html">DeleteDataPipelineWorker</a></li><li><a href="ExclusiveStack.html">ExclusiveStack</a></li><li><a href="FragmentBuilder.html">FragmentBuilder</a></li><li><a href="FragmentLifeCycleManager.html">FragmentLifeCycleManager</a></li><li><a href="GenericBuildPipelineWorker.html">GenericBuildPipelineWorker</a></li><li><a href="LifecycleRemoteRequestUtils.html">LifecycleRemoteRequestUtils</a></li><li><a href="ListDataPaginator.html">ListDataPaginator</a></li><li><a href="ListViewManager.html">ListViewManager</a></li><li><a href="LoadNewDataPipelineWorker.html">LoadNewDataPipelineWorker</a></li><li><a href="LoadServerSidePipelineWorker.html">LoadServerSidePipelineWorker</a></li><li><a href="LocalPipelineWorker.html">LocalPipelineWorker</a></li><li><a href="global.html#MainRouter">MainRouter</a></li><li><a href="MainRoutingPipeline.html">MainRoutingPipeline</a></li><li><a href="PropertiesTransitionsWorker.html">PropertiesTransitionsWorker</a></li><li><a href="Queue.html">Queue</a></li><li><a href="RemoteUILoader.html">RemoteUILoader</a></li><li><a href="Stack.html">Stack</a></li><li><a href="global.html#StandardRemoteRequestUtils">StandardRemoteRequestUtils</a></li><li><a href="StandardViewManager.html">StandardViewManager</a></li><li><a href="TargetRouteEntryUtils.html">TargetRouteEntryUtils</a></li><li><a href="TimedFunctionUtils.html">TimedFunctionUtils</a></li><li><a href="TransitionTranslationWorker.html">TransitionTranslationWorker</a></li><li><a href="TransitionsBaseWorker.html">TransitionsBaseWorker</a></li><li><a href="TransitionsManager.html">TransitionsManager</a></li><li><a href="UpdateDataPipelineWorker.html">UpdateDataPipelineWorker</a></li><li><a href="UploadDataPipelineWorker.html">UploadDataPipelineWorker</a></li><li><a href="ViewPanel.html">ViewPanel</a></li><li><a href="ViewPanelBuilder.html">ViewPanelBuilder</a></li><li><a href="ViewPanelLocalPipelineWorker.html">ViewPanelLocalPipelineWorker</a></li><li><a href="ViewPanelsManager.html">ViewPanelsManager</a></li><li><a href="ViewPanelsManagerMainBuildPipeline.html">ViewPanelsManagerMainBuildPipeline</a></li></ul><h3>Global</h3><ul><li><a href="global.html#GenericBuildPipelineWorkerCheck">GenericBuildPipelineWorkerCheck</a></li><li><a href="global.html#LoadServerSidePipelineWorkerCheck">LoadServerSidePipelineWorkerCheck</a></li><li><a href="global.html#QueueTest">QueueTest</a></li><li><a href="global.html#StandardViewManagerCheck">StandardViewManagerCheck</a></li><li><a href="global.html#UploadDataPipelineWorkerCheck">UploadDataPipelineWorkerCheck</a></li><li><a href="global.html#attrCheck">attrCheck</a></li><li><a href="global.html#base">base</a></li><li><a href="global.html#baseCheck">baseCheck</a></li><li><a href="global.html#check">check</a></li><li><a href="global.html#checkWorker">checkWorker</a></li><li><a href="global.html#completeCb">completeCb</a></li><li><a href="global.html#dataManager">dataManager</a></li><li><a href="global.html#generateRandomInteger">generateRandomInteger</a></li><li><a href="global.html#getTos">getTos</a></li><li><a href="global.html#globalLoadAsyncFragment">globalLoadAsyncFragment</a></li><li><a href="global.html#intersectionCallback">intersectionCallback</a></li><li><a href="global.html#mutationStateUpdate">mutationStateUpdate</a></li><li><a href="global.html#ofScope">ofScope</a></li><li><a href="global.html#ofViews">ofViews</a></li><li><a href="global.html#retryCb">retryCb</a></li><li><a href="global.html#routeIsValid">routeIsValid</a></li><li><a href="global.html#workerTest">workerTest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Tue Sep 03 2024 01:23:24 GMT+0300 (East Africa Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

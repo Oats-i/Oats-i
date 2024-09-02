@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: data-manager/paginators/list_data_paginator.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: data-manager/paginators/list_data_paginator.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//@ts-check
+
+import IntersectionDetectionUtils from "./utils/intersection_detection_utils.js";
+
+/**
+ * Just get what to observe at intersect, know the markers, cascade API interface calls (for this scope strictly)
+ * allow or deny pagination based on markers
+ * 
+ * And detachObservers on delete of target observer or flushAll or bulk delete 
+ * (update per cycle of delete, but batch update on attach (return set of attached views))
+ * Or, just after the attach cycle completes, run the correct get
+ * 
+ * Also, when told to setUpObservers, pass in data length and viewNodePos as well, to match
+ * to requested trigger position and doPagination
+ * 
+ * when doing pagination, just direct calls loadData() for dataManagerInstance;
+ * 
+ */
+
+/**
+ * @template M
+ * @template {ArrayOnlyNestedKeys&lt;M>} VMS
+ */
+class ListDataPaginator{
+
+    /**
+     * 
+     * @param {import("./list_data_paginator.d.ts.js").ListDataPaginatorOptions&lt;M, VMS>} args 
+     */
+    constructor(args){
+
+        /**
+         * @type {VMS}
+         */
+        this.scope = args.scope;
+        /**
+         * @type {string}
+         */
+        this.soleModelId = args.soleModelId;
+        /**
+         * @type {number}
+         */
+        this.paginationTriggerPos = args.triggerPos_ToLast ? args.triggerPos_ToLast : 6;
+        /**
+         * @type {DataManagerInstance&lt;M>}
+         */
+        this.dataManager = args.dataManagerInstance;
+        /**
+         * @type {ListViewManagerInstance&lt;M, VMS>}
+         */
+        this.listViewManager = args.listViewManagerInstance;
+        this.rootViewOptions = args.viewOptions;
+        /**
+         * @type {import("DataManager").DataOperationsNetworkInterface&lt;ValueTypeOfNested&lt;M, VMS>, VMS, M>}
+         */
+        this.loadNewNetworkInterface = args.networkInterface;
+        this.loadDataOptions = args.loadDataOptions;
+        this.overrideNetworkInterface = this.initOverrideNetworkInterface();
+        this.finalCallInterface = args.finalCallInterface;
+        /**
+         * @type {boolean}
+         */
+        this.doneFullPagination = args?.serverSidePaginationEnd;
+
+        /**
+         * @type {Element}
+         */
+        this.currentIntersectionTarget = null;
+        /**
+         * @type {string}
+         */
+        this.overrideLoadAddr = null;
+    }
+
+    /**
+     * @type {ListDataPaginatorInstance&lt;M, VMS>['initOverrideNetworkInterface']}
+     */
+    initOverrideNetworkInterface(){
+
+        const getLoadNewNetworkInterface = () => {
+
+            return this.loadNewNetworkInterface;
+        }
+
+        const getSelf = () => this;
+
+        return {
+
+            async getReqBody(addr, updatedModel, mutation, oldCompleteModel){
+
+                return await getLoadNewNetworkInterface().getReqBody(addr, updatedModel, mutation, oldCompleteModel);
+            },
+
+            async onDataLoadPostProcess(reqAddr, response, newData, oldData, mutation, mappedDataId, extras){
+
+                const data = await getLoadNewNetworkInterface().onDataLoadPostProcess(reqAddr, response, newData, oldData, mutation, mappedDataId, extras);
+                if(data.extras?.paginationInfo[getSelf().scope]?.stopPagination !== undefined){
+
+                    getSelf().setPaginationComplete(data.extras.paginationInfo[getSelf().scope].stopPagination);
+                }
+                return data;
+            },
+
+            onDataLoadError(reqAddr, response, newData, oldData, mutation){
+
+                return getLoadNewNetworkInterface().onDataLoadError(reqAddr, response, newData, oldData, mutation);
+            }
+        }
+    }
+
+    /**
+     * @type {ListDataPaginatorInstance&lt;M, VMS>['setSoleModelId']} 
+     */
+    setSoleModelId(modelId){
+
+        if(!this.soleModelId){
+
+            this.soleModelId = modelId;
+        }
+    }
+
+    /**
+     */
+    doPagination(){
+
+        this.dataManager.loadData(this.scope, { modelID: this.soleModelId, mappedDataId: this.listViewManager.childOptions.parentMappedDataId }, this.loadDataOptions, this.overrideNetworkInterface, this.overrideLoadAddr).then((result) => {
+
+            this.finalCallInterface?.onCompleteSuccess(result)
+        }).catch((err) => {
+
+            this.finalCallInterface?.onCompleteFail(err);
+        });
+    }
+
+    /**
+     * Called to refresh paginated list and load a new one
+     * 
+     * Flushes the right scope data then triggers a new load for the scope
+     * 
+     * NOTE: As long as you call this, and you actively set the doneFullPagination value at on data post process
+     * the newly loaded data should have its pagination reset
+     * 
+     * @type {ListDataPaginatorInstance&lt;M, VMS>['refreshList']}
+     */
+    refreshList(overrideLoadAddr){
+
+        //Here, clear the scoped model first and then load a new list based on given params 
+        //(accessible in interface)
+        //So, introducing a new data manager method, flushScopedData(modelId, scope), 
+        //modelID and scope accepting MODEL_ROOT AT THE SAME TIME to flushAllData
+
+        //flush scopedData will just create a new mutation, with power to cancel all loadNewOperations for that scope
+        //overwrite model for the scope to null and commit that
+        //Then, you can trigger a loadNewMutation for that scope
+        this.dataManager.flushScopedData(this.soleModelId, this.scope);
+        this.overrideLoadAddr = overrideLoadAddr;
+        this.doPagination();
+    }
+
+    /**
+     * @type {ListDataPaginatorInstance&lt;M, VMS>['setUpPaginationIntersector']}
+     */
+    setUpPaginationIntersector(){
+
+        /**
+         * Setting intersection point
+        */
+       //Remove currently being observed
+        if(this.currentIntersectionObserver){
+    
+            this.currentIntersectionObserver.unobserve(this.currentIntersectionTarget);
+            this.currentIntersectionObserver = null;
+            this.currentIntersectionTarget = null;
+        }
+
+        //observe new
+        const observerViewPort = this.listViewManager.getIntersectionObserverViewPort();
+        const allViewNodes = observerViewPort.getElementsByClassName(this.rootViewOptions.componentViewClass);
+        if(!this.doneFullPagination &amp;&amp; allViewNodes?.length > this.paginationTriggerPos){
+
+            this.currentIntersectionTarget = allViewNodes[allViewNodes.length - this.paginationTriggerPos];
+            this.currentIntersectionObserver = IntersectionDetectionUtils.initIntersector(observerViewPort, 0.4, this.currentIntersectionTarget, this.doPagination.bind(this));
+        }
+    }
+
+    /**
+     * @type {ListDataPaginatorInstance&lt;M, VMS>['updatePaginationIntersectorOnDelete']}
+     */
+    updatePaginationIntersectorOnDelete(deletedNode){
+
+        if(this.currentIntersectionTarget === deletedNode){
+
+            this.setUpPaginationIntersector();
+        }
+    }
+
+    /**
+     * @type {ListDataPaginatorInstance&lt;M, VMS>['setPaginationComplete']}
+     */
+    setPaginationComplete(completed){
+
+        this.doneFullPagination = completed;
+    }
+}
+
+if(false){
+
+    /**
+     * @type {import("./list_data_paginator.d.ts.js").ListDataPaginatorInstance&lt;*, *>}
+     */
+    const check = new ListDataPaginator(null);
+}
+
+export default ListDataPaginator;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AppChildFragment.html">AppChildFragment</a></li><li><a href="AppFragmentBuilder.html">AppFragmentBuilder</a></li><li><a href="AppMainFragment.html">AppMainFragment</a></li><li><a href="AppShellAsyncChildFragment.html">AppShellAsyncChildFragment</a></li><li><a href="AppShellAsyncMainFragment.html">AppShellAsyncMainFragment</a></li><li><a href="AppStateManager.html">AppStateManager</a></li><li><a href="AsyncAppFragmentBuilder.html">AsyncAppFragmentBuilder</a></li><li><a href="AsyncShellLocalPipelineWorker.html">AsyncShellLocalPipelineWorker</a></li><li><a href="AttributesTransitionsWorker.html">AttributesTransitionsWorker</a></li><li><a href="BaseDataPipelineWorker.html">BaseDataPipelineWorker</a></li><li><a href="DataManager.html">DataManager</a></li><li><a href="DeleteDataPipelineWorker.html">DeleteDataPipelineWorker</a></li><li><a href="ExclusiveStack.html">ExclusiveStack</a></li><li><a href="FragmentBuilder.html">FragmentBuilder</a></li><li><a href="FragmentLifeCycleManager.html">FragmentLifeCycleManager</a></li><li><a href="GenericBuildPipelineWorker.html">GenericBuildPipelineWorker</a></li><li><a href="LifecycleRemoteRequestUtils.html">LifecycleRemoteRequestUtils</a></li><li><a href="ListDataPaginator.html">ListDataPaginator</a></li><li><a href="ListViewManager.html">ListViewManager</a></li><li><a href="LoadNewDataPipelineWorker.html">LoadNewDataPipelineWorker</a></li><li><a href="LoadServerSidePipelineWorker.html">LoadServerSidePipelineWorker</a></li><li><a href="LocalPipelineWorker.html">LocalPipelineWorker</a></li><li><a href="global.html#MainRouter">MainRouter</a></li><li><a href="MainRoutingPipeline.html">MainRoutingPipeline</a></li><li><a href="PropertiesTransitionsWorker.html">PropertiesTransitionsWorker</a></li><li><a href="Queue.html">Queue</a></li><li><a href="RemoteUILoader.html">RemoteUILoader</a></li><li><a href="Stack.html">Stack</a></li><li><a href="global.html#StandardRemoteRequestUtils">StandardRemoteRequestUtils</a></li><li><a href="StandardViewManager.html">StandardViewManager</a></li><li><a href="TargetRouteEntryUtils.html">TargetRouteEntryUtils</a></li><li><a href="TimedFunctionUtils.html">TimedFunctionUtils</a></li><li><a href="TransitionTranslationWorker.html">TransitionTranslationWorker</a></li><li><a href="TransitionsBaseWorker.html">TransitionsBaseWorker</a></li><li><a href="TransitionsManager.html">TransitionsManager</a></li><li><a href="UpdateDataPipelineWorker.html">UpdateDataPipelineWorker</a></li><li><a href="UploadDataPipelineWorker.html">UploadDataPipelineWorker</a></li><li><a href="ViewPanel.html">ViewPanel</a></li><li><a href="ViewPanelBuilder.html">ViewPanelBuilder</a></li><li><a href="ViewPanelLocalPipelineWorker.html">ViewPanelLocalPipelineWorker</a></li><li><a href="ViewPanelsManager.html">ViewPanelsManager</a></li><li><a href="ViewPanelsManagerMainBuildPipeline.html">ViewPanelsManagerMainBuildPipeline</a></li></ul><h3>Global</h3><ul><li><a href="global.html#GenericBuildPipelineWorkerCheck">GenericBuildPipelineWorkerCheck</a></li><li><a href="global.html#LoadServerSidePipelineWorkerCheck">LoadServerSidePipelineWorkerCheck</a></li><li><a href="global.html#QueueTest">QueueTest</a></li><li><a href="global.html#StandardViewManagerCheck">StandardViewManagerCheck</a></li><li><a href="global.html#UploadDataPipelineWorkerCheck">UploadDataPipelineWorkerCheck</a></li><li><a href="global.html#attrCheck">attrCheck</a></li><li><a href="global.html#base">base</a></li><li><a href="global.html#baseCheck">baseCheck</a></li><li><a href="global.html#check">check</a></li><li><a href="global.html#checkWorker">checkWorker</a></li><li><a href="global.html#completeCb">completeCb</a></li><li><a href="global.html#dataManager">dataManager</a></li><li><a href="global.html#generateRandomInteger">generateRandomInteger</a></li><li><a href="global.html#getTos">getTos</a></li><li><a href="global.html#globalLoadAsyncFragment">globalLoadAsyncFragment</a></li><li><a href="global.html#intersectionCallback">intersectionCallback</a></li><li><a href="global.html#mutationStateUpdate">mutationStateUpdate</a></li><li><a href="global.html#ofScope">ofScope</a></li><li><a href="global.html#ofViews">ofViews</a></li><li><a href="global.html#retryCb">retryCb</a></li><li><a href="global.html#routeIsValid">routeIsValid</a></li><li><a href="global.html#workerTest">workerTest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Tue Sep 03 2024 01:23:24 GMT+0300 (East Africa Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
