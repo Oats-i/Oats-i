@@ -31,5 +31,8 @@
   "bugs": {
     "url": "https://github.com/Oats-i/Oats-i/issues"
   },
-  "homepage": "https://github.com/Oats-i/Oats-i#readme"
+  "homepage": "https://github.com/Oats-i/Oats-i#readme",
+  "devDependencies": {
+    "jsdoc": "^4.0.3"
+  }
 }
