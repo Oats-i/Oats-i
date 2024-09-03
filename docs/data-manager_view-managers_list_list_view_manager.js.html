@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: data-manager/view-managers/list/list_view_manager.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: data-manager/view-managers/list/list_view_manager.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//@ts-check
+
+import Queue from "../../../utils/abstract-data-types/queue/queue";
+import RandomNumberCharGenUtils from "../../../utils/random-number-generator/random_number_char_generator";
+import ListReverser from "../../../utils/lists/list_reverser";
+import DataManager from "../../data_manager";
+import ListDataPaginator from "../../paginators/list_data_paginator";
+import StandardViewManager from "../standard/standard_view_manager";
+
+/**
+ * @template {any} M
+ * @template {ArrayOnlyNestedKeys&lt;M>} G_S
+ * 
+ * @extends {StandardViewManager&lt;M, G_S>}
+ */
+class ListViewManager extends StandardViewManager{
+
+    /**
+     * @param {DataManagerInstance&lt;M>} dataManager
+     * @param {import("ListViewManager").ListDataManagerViewManagerConstructorOptions&lt;M, G_S>} options
+     */
+    constructor(dataManager, options){
+
+        super(dataManager, options);
+
+        //VERY IMPORTANT setting. Will allow spawned models to be removed with the right mutation
+        this.rootViewOptions = { ...options.viewOptions, reinflateRootViewOnNewModel: true };
+        /**
+         * @type {import("ListViewManager").ListViewManagerInstance&lt;M, G_S>['existingModelsList']}
+         */
+        this.existingModelsList = null;
+        /**
+         * @type {import("ListViewManager").ListViewManagerInstance&lt;M, G_S>['filteredInternalModelsList']}
+         */
+        this.filteredInternalModelsList = [];
+        /**
+         * @type {ListDataPaginatorInstance&lt;M, G_S>}
+         */
+        this.listDataPaginator = null;
+        /**
+         * @type {Element}
+         */
+        this.overrideObserverViewPort = null;
+        //for telling about server-side pagination status
+        this.existingModelsOptions = {
+
+            continuePaginationForExisting: options.continuePaginationForExisting
+        };
+        //Set up pagination
+        if(options.pagination?.enabled){
+
+            this.setUpPaginator(options.pagination);
+        }
+    }
+
+    /**
+     * Allows self to be child. Else, throws error
+     */
+    validateSelfAsChild(){
+        
+        return true;
+    }
+
+    /**
+     * @this ListViewManagerInstance&lt;M, G_S>
+     * Call your sets AFTER needed main view is bound
+     * 
+     * Get invokation from onViewReady calls for lifecycle manager to do these automatically, 
+     * including running server side
+     * 
+     * if we have data, and no server side to process, then spawn directly (autopopulate)
+     */
+    autoPopulateViewsFromExistingOrServerSide(){
+
+        if(this.dataManager.hasData()){
+
+            //DO NOT REVERSE THE DATA
+            //FOR LISTS, JUST REVERSE VIEW LISTS IF STACK, SO WELL REPRESENTED WITH DATA.
+            //BUT NEVER REVERSE DATA. Must be congruent with model
+            /**
+             * @type {string | string[]}
+             */
+            let modelId_s = null;
+            //if child, build for child
+            if(this.isChildInfo.isChild){
+
+                //The data we have to work with, given the parent's modelID
+                modelId_s = this.childOptions.parentModelId;
+                const data = this.reduceHookDataToScope(this.dataManager.getModel(modelId_s), "MODEL_ROOT", this.scope, null);
+                this.existingModelsList = data;
+            } else {
+
+                //Its a parent. Source everything in scope
+                //Model id will also be an array
+                if(this.scope === DataManager._MODEL_ROOT_SCOPE){
+
+                    this.existingModelsList = [];
+                    modelId_s = [];
+                    for(let i = 0; i &lt; this.dataManager.dataLength(); i++){
+        
+                        //No need to reduce. Data scope of MODEL_ROOT same as view manager. So direct push
+                        this.existingModelsList.push(this.dataManager.getModelInIndex(i));
+                        modelId_s.push(this.dataManager.getModelId(i));
+                    }
+                } else {
+
+                    //By default, will work with the first model in index for that scope.
+                    //Yes. Cause its parent, and no information about changing index
+                    //This is for a weird scenario. Warn
+                    console.warn(`LIST VIEW MANAGER ID: ${this.id}. List view manager is not a child and scope is not MODEL_ROOT. Taking relevant scope in first model (index 0)`);
+                    console.error("In autoPopulateViewsFromExisting, after serverSide trigger");
+
+                    modelId_s = this.dataManager.getModelId(0);
+                    const data = this.reduceHookDataToScope(this.dataManager.getModelInIndex(0), "MODEL_ROOT", this.scope, null);
+                    this.existingModelsList = data;
+                }
+            }
+
+            //Now, autopopulate views, if not already server-side generated by calling onCommit
+            if(Array.isArray(this.existingModelsList)){
+
+                //direct call commit if child. Else, just leave as is. Parent already invoked child. Just getting data
+                if(!this.isChildInfo.isChild){
+
+                    //using this.processServerSide flag to automatically populate if not server side but rather an init direct
+                    this.onCommit("create", this.existingModelsList, null, null, modelId_s, this.scope, this.scope, () => {}, { isServerSideCreate: this.processServerSide, paginationInfo: { [this.scope]: { stopPagination: this.existingModelsOptions.continuePaginationForExisting?.(this.existingModelsList, modelId_s) } } });
+                }
+            } else {
+
+                console.error(`Cannot autopopulate views. Your scope ${this.scope} doesn't refer to an array`);
+            }
+        }
+    }
+
+    /**
+     * Hooks any server-side views, if server side
+     * @returns {ServerSideAttachedViewInfo[]}
+     */
+    hookServerSideViews(){
+
+        if(this.processServerSide){
+
+            //Child is not automatically triggered
+            //So, trigger first, as this trigger was from onCommit, invoke children, in parent
+            if(this.isChildInfo.isChild){
+                
+                this.autoPopulateViewsFromExistingOrServerSide();
+            }
+            
+            //Just fail if we don't have a valid existingModelsList
+            if(!this.existingModelsList?.length){
+
+                throw new Error("Failed to attach server side views to view manager. No models loaded to list");
+            }
+
+            //Get the views
+            let serverSideViews = this.getParentRootViewNode().querySelectorAll(`.${this.rootViewOptions.componentViewClass}`);
+            if(this.baseViewAppendOrder === "stack"){
+
+                serverSideViews = ListReverser.reverseList(serverSideViews);
+            }
+
+            if(this.existingModelsList.length &lt; serverSideViews.length){
+
+                throw new Error(`Can't attach server side views for list manager with id ${this.id}. Models and views length not equal. Have you sourced them over network? Init calls are delayed for this. \n\nModel: ${this.existingModelsList.length} :: ${serverSideViews.length}`);
+            }
+
+            if(this.existingModelsList.length > serverSideViews.length){
+
+                //throw an error?
+                console.warn(`Attaching server side views for list manager with id ${this.id}. However, note that internal models list length exceeds server side views length: ${serverSideViews.length}`);
+            }
+
+            /**
+             * @type {AttachServerSideViewInfo[]}
+             */
+            this.finalAttachServerSideInfo = [];
+            if(this.isChildInfo.isChild){
+
+                //add to attachedModels
+                serverSideViews.forEach((view, index) => {
+
+                    const mappedId = this.spawnAttachedModels(this.childOptions.parentModelId, view);
+                    //put in info
+                    this.finalAttachServerSideInfo.push({
+
+                        mappedDataId: mappedId,
+                        viewNode: view,
+                        modelId: this.childOptions.parentModelId
+                    });
+                    //Fire hooks
+                    /**
+                     * @type {import("ListViewManager").ListViewManagerInstance&lt;M, G_S>['rootViewDataHooks']}
+                     */
+                    //@ts-expect-error
+                    const rootViewDataHooks = this.rootViewDataHooks;
+                    //calling this cause that's where you attach listeners and etc
+                    //indexing with index cause it is array (that's the base type of a list view manager's scope)
+                    rootViewDataHooks.root.builder.onViewAttach(this.childOptions.parentModelId, this.dataManager.getScopedModel(this.scope, mappedId, this.childOptions.parentModelId, false)[index], view, mappedId, { viewManagerRef: this, parentMappedDataId: this.childOptions.parentMappedDataId });
+                });
+            } else {
+
+                if(this.scope === DataManager._MODEL_ROOT_SCOPE){
+
+                    //Add to attached models
+                    serverSideViews.forEach((view, index) => {
+
+                        const modelID = this.dataManager.getModelId(index);
+                        const mappedId = this.spawnAttachedModels(modelID, view);
+                        //put in info
+                        this.finalAttachServerSideInfo.push({
+
+                            mappedDataId: mappedId,
+                            viewNode: view,
+                            modelId: modelID
+                        });
+                        //Fire hooks
+                        /**
+                         * @type {import("ListViewManager").ListViewManagerInstance&lt;M, G_S>['rootViewDataHooks']}
+                         */
+                        //@ts-expect-error
+                        const rootViewDataHooks = this.rootViewDataHooks;
+                        rootViewDataHooks.root.builder.onViewAttach(modelID, this.dataManager.getModel(modelID), view, mappedId, { viewManagerRef: this, parentMappedDataId: this.childOptions.parentMappedDataId });
+                    });
+                } else {
+
+                    //By default, will work with the first model in index for that scope.
+                    //Yes. Cause its parent, and no information about changing index
+                    //This is for a weird scenario. Warn
+                    console.warn(`LIST VIEW MANAGER ID: ${this.id}. List view manager is not a child and scope is not MODEL_ROOT. Taking relevant scope in first model (index 0)`);
+                    //Add to attached models
+                    serverSideViews.forEach((view, index) => {
+
+                        const modelID = this.dataManager.getModelId(0);
+                        const mappedId = this.spawnAttachedModels(modelID, view);
+                        //put in info
+                        this.finalAttachServerSideInfo.push({
+
+                            mappedDataId: mappedId,
+                            viewNode: view,
+                            modelId: modelID
+                        });
+                        /**
+                         * @type {import("ListViewManager").ListViewManagerInstance&lt;M, G_S>['rootViewDataHooks']}
+                         */
+                        //@ts-expect-error
+                        const rootViewDataHooks = this.rootViewDataHooks;
+                        rootViewDataHooks.root.builder.onViewAttach(modelID, this.dataManager.getScopedModel(this.scope, mappedId, modelID, false)[index], view, mappedId, { viewManagerRef: this, parentMappedDataId: this.childOptions.parentMappedDataId });
+                    });
+                }
+            }
+
+            return this.finalAttachServerSideInfo;
+        } else {
+
+            throw new Error("Called to process server side while flag is false");
+        }
+    }
+
+    /**
+     * @type {StandardViewManagerInstance&lt;M, G_S>['getParentRootViewNode']}
+     */
+    getParentRootViewNode(){
+
+        !this.parentRootViewNode ? this.parentRootViewNode = !this.isChildInfo.isChild ? document.getElementById(this.rootViewOptions.parentNodeID) : this.childOptions.parentRootNode.querySelector(`.${this.rootViewOptions.parentNodeClass_AsChild}`) : null; 
+        if(!this.parentRootViewNode){
+
+            if(!this.isChildInfo.isChild){
+
+                console.error("DATA MANAGER VIEW MANAGER: Attempted to run root and view node build but parent with id " + this.rootViewOptions.parentNodeID + " has not been manually attached to the view. Ensure it already exists in markup");
+            } else {
+
+                console.error("DATA MANAGER VIEW MANAGER: Attempted to run root and view node build but node in parent view manager has not been manually attached to the view. Ensure it already exists in markup.\nClass selector: " + this.rootViewOptions.parentNodeClass_AsChild);
+            }
+            return null;
+        }
+
+        return this.parentRootViewNode;
+    }
+
+    /**
+     * TODO: Spawn children only if we have a view node (so not a temp)
+     * For temp, spawn on updateAttachedModels
+     * @type {StandardViewManager&lt;M, G_S>['spawnAttachedModels']}
+     */
+    spawnAttachedModels(modelId, attachedViewNode){
+
+        //runs the same even for fake spawn. Just updates
+        const getMappedId = () => {
+
+            return `${this.id}#${RandomNumberCharGenUtils.generateRandomNumChar(6)}`;
+        }
+        const mappedId = getMappedId();
+        //item position is okay analogous to length of attached models length, since managing an array
+        //but when getting orderedArrayIndices, parent joins to this. Works well
+        this.attachedModels.enqueue({
+
+            modelId: modelId,
+            itemPosition: this.attachedModels.length,
+            mappedDataId: mappedId,
+            attachedViewNode: attachedViewNode,
+        });
+        
+        //Set the child and watchers. Outside so we just get the okay ordered indices
+        this.attachedModels.peek().orderedChildViewManagers = this.inflateOrderedChildViewManagers({ parentDataIndex: this.attachedModels.length, parentModelId: modelId, parentRootNode: attachedViewNode, parentOrderedArrayIndices: this.getOrderedArrayIndices(this.scope, mappedId) }), //No enqueue. Working now after commit
+        this.attachedModels.peek().watcherChildViewManagers = this.getWatcherChildViewManagers({ parentRootNode: this.getParentRootViewNode() })
+
+        return mappedId;
+    }
+
+    /**
+     * 
+     * So, have two versions. CORRECT WAY AS PER ALGO is to return a non-empty queue
+     * 
+     * Scope used to determine if ordered array indices valid (only if scope not model root)
+     * @type {StandardViewManagerInstance&lt;M, G_S>['getOrderedArrayIndices']} 
+     */
+    getOrderedArrayIndices(scope, mappedDataId){
+
+        /**
+         * @type {ViewManagerOrderedArrayIndices}
+         */
+        const orderedArrayIndices = new Queue();
+        //if scope is model root, just return an empty queue. modelId is the target lol
+        if(this.scope === DataManager._MODEL_ROOT_SCOPE){
+
+            return orderedArrayIndices;
+        }
+
+        //if child, add from parents
+        this.childOptions?.parentOrderedArrayIndices ? orderedArrayIndices.join(this.childOptions?.parentOrderedArrayIndices.copy()) : null;
+        //Now join with result from self or children
+        orderedArrayIndices.join(super.getOrderedArrayIndices(scope, mappedDataId));
+
+        return orderedArrayIndices;
+    }
+
+    /**
+     * @type {StandardViewManagerInstance&lt;M, G_S>['onCommit']}
+     */
+    onCommit(mutation, newData, oldData, mappedDataId, modelId, APIScope, originalScope, completeCb, extras){
+
+        //bounce completely if requested scope is not same, child, or parent of this
+        if(this.canRunHooks(APIScope)){
+
+            if(this.canRunHooks(APIScope, true)){
+                
+                //create clones
+                newData = structuredClone(newData);
+                oldData = structuredClone(oldData);
+                const origModelId_s = modelId;
+                modelId = structuredClone(modelId);
+                //Dealing with edge loadNew cases where response 200 OK but no data
+                if(modelId){
+        
+                    const newViewManagerScopedData = this.reduceHookDataToScope(newData, APIScope, this.scope, mappedDataId);
+                    const oldViewManagerScopedData = this.reduceHookDataToScope(oldData, APIScope, this.scope, mappedDataId);
+            
+                    /**
+                     * @param {boolean} modelIdFixed 
+                     * @param {genericFunction} completeCB
+                     * @param {boolean} [doneFirstPass]
+                     */
+                    //Create clones for our recursive actions (since array)
+                    const recursiveOrigNewData = structuredClone(newData);
+                    const recursiveOrigOldData = structuredClone(oldData);
+                    //Usually array if working in same scope, or MODEL_ROOT with mutiple models
+                    //else, can have situation where new data is object, but scoped data (to this scope) is the array
+                    //That's why the scopedData array functions are valid and untouched
+                    const origDataIsArray = Array.isArray(recursiveOrigNewData);
+    
+                    //get the attached server side views
+                    /**
+                     * @type {ServerSideAttachedViewInfo[]}
+                     */
+                    let serverSideAttachedViewInfo = [];
+                    if(extras?.isServerSideCreate){
+    
+                        serverSideAttachedViewInfo = this.hookServerSideViews();
+                    }
+                    const recursiveCallCommits = (modelIdFixed, completeCB, doneFirstPass) => {
+            
+                        if((Array.isArray(modelId) &amp;&amp; modelId.length) || (modelIdFixed &amp;&amp; newViewManagerScopedData.length)){
+            
+                            const finalModelID = modelIdFixed ? modelId : modelId.at(0);
+                            this.runSingleCommit(mutation, newViewManagerScopedData.at(0), oldViewManagerScopedData?.at(0), mappedDataId, finalModelID, APIScope, originalScope, () => {
+            
+                                newViewManagerScopedData.splice(0, 1);
+                                oldViewManagerScopedData?.splice(0, 1);
+                                modelIdFixed ? null : modelId.splice(0, 1);
+                                if(origDataIsArray){
+    
+                                    //reduce the cloned new and old data
+                                    recursiveOrigNewData.splice(0, 1);
+                                    recursiveOrigOldData?.splice(0, 1);
+                                }
+                                if(serverSideAttachedViewInfo.length){
+    
+                                    //reduce the serverSideAttachedViewInfo
+                                    serverSideAttachedViewInfo.splice(0, 1);
+                                }
+                                recursiveCallCommits(modelIdFixed, completeCB, true);
+                            //extras can be undefined cause of non "new" mutations
+                            }, { ...extras, origOldData_At: origDataIsArray ? recursiveOrigOldData?.at(0) : recursiveOrigOldData, origNewData_At: origDataIsArray ? recursiveOrigNewData.at(0) : recursiveOrigNewData, tempMappedDataIdInfo: { ...extras?.tempMappedDataIdInfo, tempMappedDataId: doneFirstPass ? null : extras?.tempMappedDataIdInfo?.tempMappedDataId  }, serverSideAttachedInfo: serverSideAttachedViewInfo.at(0) });
+                        } else {
+            
+                            //set up paginator here?
+                            //if not delete or delete_FLushAll. Those self-manage
+                            if(mutation === "loadNew" || mutation === "uploadNew" || mutation === "create"){
+    
+                                let stopPagination = false;
+                                if(extras?.isServerSideCreate &amp;&amp; this.isChildInfo.isChild){
+
+                                    //child never fires this directly before onCommit because a child's mutation is fired by parent, but a parent fires its own when spawning from existing 
+                                    stopPagination = this.existingModelsOptions.continuePaginationForExisting?.(this.existingModelsList, origModelId_s);
+                                } else {
+
+                                    stopPagination = extras?.paginationInfo ? extras.paginationInfo[this.scope]?.stopPagination : undefined
+                                }
+                                this.setUpPaginationIntersector(mutation, modelId, stopPagination);
+                            }
+                            completeCB();
+                        }
+                    }
+            
+                    //Call the prePostRootAttachHooks
+                    if(mutation === "uploadNew" || mutation === "loadNew" || mutation === "create"){
+            
+                        if(mappedDataId){
+        
+                            console.error(`Received a mapped data ID for view manager ${this.id} and scope ${this.scope} | APIScope: ${this.scope} for a "new" mutation ${mutation}`);
+                            console.warn(`Will safely assume this specific view manager's implementation has no child. So, can run mutation here and nullify provided mapped data id`);
+                            mappedDataId = null;
+                        }
+        
+                        //Called b4 views are spawned. Good call
+                        if(!extras?.isServerSideCreate){
+    
+                            //Call for root view hooks
+                            if(this.rootViewDataHooks &amp;&amp; (this.dataComparator(newData, oldData, APIScope, mappedDataId).base() || mutation === "create")){
+                
+                                /**
+                                 * @type {import("ListViewManager").ListViewManagerInstance&lt;M, G_S>['rootViewDataHooks']}
+                                 */
+                                //@ts-expect-error
+                                const rootViewDataHooks = this.rootViewDataHooks;
+                                //Passes the parent root node, not viewRoot
+                                rootViewDataHooks.root.prePostRootAttachHooks.onCommit(modelId, mutation, newViewManagerScopedData, oldViewManagerScopedData, this.getParentRootViewNode(), { viewManagerRef: this, parentMappedDataId: this.childOptions.parentMappedDataId });
+                            }
+                        }
+                    }
+            
+                    if(Array.isArray(modelId)){
+            
+                        //Allows for say bulk delete try, and API can failsafe the transaction i.e delete valid ones and skip non-valid ones
+                        //And you can provide that here. just match newData length to model id length of deleted
+                        //Counter-intuitive, but makes a lot of sense to work like this, functionally
+                        if((mutation === "loadNew" || mutation === "delete") &amp;&amp; newViewManagerScopedData?.length !== modelId.length){
+            
+                            console.error("Length of new data and new model ids should match if mutation is loadNew or delete " + newViewManagerScopedData?.length + " :: " + modelId.length);
+                            completeCb();
+                            return;
+                        }
+            
+                        recursiveCallCommits(false, () => {
+            
+                            completeCb();
+                        });
+                    } else {
+            
+                        //Change happened to one model id. 
+                        //Depending on request scope, Data an array or not (selfType) - YES. So valid, but deeper scope (inside array)
+                        //All from server-side are array though, cause we retrieve whole list (to scope) - figure out commit
+                        //delete mutation (for bulk) should NEVER get here, because it also provides an array of model id
+                        if(Array.isArray(newViewManagerScopedData)){
+            
+                            recursiveCallCommits(true, () => {
+            
+                                if((mutation === "delete" || mutation === "delete_FlushAll") &amp;&amp; (originalScope === DataManager._MODEL_ROOT_SCOPE || originalScope === this.scope || APIScope === this.scope)){
+                                    
+                                    // this.setUpPaginationIntersector(mutation);
+                                    // completeCb();
+                                } else {
+                                    
+                                    // runChildrenViewManagerCommits();
+                                }
+                                //just complete
+                                completeCb();
+                            });
+                        } else {
+            
+                            //Will NEVER be the case for server side attached views
+                            //Always return an array as data
+                            this.runSingleCommit(mutation, newViewManagerScopedData, oldViewManagerScopedData, mappedDataId, modelId, APIScope, originalScope, () => {
+            
+                                //doing this check first because for delete, we run children first - also, such mutations only pass null, so expect this
+                                if((mutation === "delete" || mutation === "delete_FlushAll") &amp;&amp; (originalScope === DataManager._MODEL_ROOT_SCOPE || originalScope === this.scope || APIScope === this.scope)){
+        
+                                    // this.setUpPaginationIntersector(mutation);
+                                    // completeCb();
+                                } else {
+                                    
+                                    // runChildrenViewManagerCommits();
+                                }
+                                //just complete
+                                completeCb();
+                            }, { ...extras, origOldData_At: oldData, origNewData_At: newData });
+                        }
+                    }
+                } else {
+        
+                    if(this.rootViewDataHooks){
+        
+                        console.warn("Committed with no modelID. This should only be valid for a loadNew mutation where the API returns a 200 OK response but no data...EEEH NOPE");
+                        /**
+                         * @type {import("ListViewManager").ListViewManagerInstance&lt;M, G_S>['rootViewDataHooks']}
+                         */
+                        //@ts-expect-error
+                        const rootViewDataHooks = this.rootViewDataHooks;
+                        //Passes the parent root node, not viewRoot
+                        rootViewDataHooks.root.prePostRootAttachHooks.onCommit(null, mutation, null, null, this.getParentRootViewNode(), { viewManagerRef: this, parentMappedDataId: this.childOptions.parentMappedDataId });
+                    }
+                    completeCb();
+                }
+            } else {
+
+                //transfer onCancel logic (take arrays and recursive call) then short test this scope thing for now
+                //then get back to the main job. We need to be up tomorrow morning
+                if(!mappedDataId){
+
+                    /**
+                     * Read more in onMutate, same place
+                    */
+                    throw new Error(`Data operation is of a specific scope, but no mapped data id provided.\nScope: ${this.scope} | APIScope: ${APIScope}`);
+                }
+                
+                this.invokeChildViewManagers(mappedDataId, (viewManager, cb) => {
+                    
+                    viewManager.onCommit(mutation, newData, oldData, mappedDataId, modelId, APIScope, originalScope, () => {
+
+                        cb();
+                    }, { ...extras, tempMappedDataIdInfo: extras?.tempMappedDataIdInfo?.childrenInfo.find((info) => info.viewManagerId === viewManager.id) });
+                }, () => {
+
+                    completeCb();
+                });
+            }
+        } else {
+
+            completeCb();
+        }
+    }
+
+    /**
+     * @template {keyof DataManagerInstance&lt;M>['masterWorkingModel']['scopedOptions']['apis']} FinalScope
+     * @param {DataManagerMutations} mutation 
+     * @param {Partial&lt;ValueTypeOfArrayOnly&lt;M, G_S>>} newData 
+     * @param {Partial&lt;ValueTypeOfArrayOnly&lt;M, G_S>>} oldData 
+     * @param {string} mappedDataId 
+     * @param {string} modelId 
+     * @param {FinalScope} APIScope 
+     * @param {NestedChildKeyOf&lt;M, FinalScope>} originalScope
+     * @param {genericFunction} completeCb 
+     * @param {ViewManagerMutationCBExtras&lt;M, FinalScope> &amp; { origOldData_At: DataManagerPermittedBulkType&lt;M, FinalScope>, origNewData_At: DataManagerPermittedBulkType&lt;M, FinalScope>, serverSideAttachedInfo: ServerSideAttachedViewInfo }} extras 
+     */
+    runSingleCommit(mutation, newData, oldData, mappedDataId, modelId, APIScope, originalScope, completeCb, extras){
+
+        if((mutation === "delete" || mutation === "delete_FlushAll") &amp;&amp; (originalScope === DataManager._MODEL_ROOT_SCOPE || originalScope === this.scope || APIScope === this.scope)){
+
+            //tell the children first
+            this.invokeChildViewManagers(mappedDataId,(viewManager, cb) => {
+                    
+                viewManager.onCommit(mutation, extras.origNewData_At, extras.origOldData_At, mappedDataId, modelId, APIScope, originalScope, () => {
+                    
+                    cb();
+                }, extras);
+            }, () => {
+                
+                //Now remove self
+                //If the APIScope is model root or matches this scope data is being deleted. View no longer relevant
+                //Else, normal mutation flow followed
+                //If the APIScope is model root or matches this scope data is being deleted. View no longer relevant
+                //Else, normal mutation flow followed
+                if(APIScope === this.scope || this.scope.toString().startsWith(APIScope)){
+                    
+                    this.detachViewNodeFromRootParent(mutation, modelId, newData, mappedDataId);
+                    completeCb();
+                }
+            });
+        } else {
+
+            /**
+             * @type {import("StandardViewManager").NewViewInfo}
+             */
+            let newViewInfo = null;
+            if(mutation === "uploadNew" || mutation === "loadNew" || mutation === "create"){
+    
+                if(mappedDataId){
+
+                    //add for create in commit
+                    throw new Error("Cannot have a mappedDataId for loadNew, uploadNew, or create in onCommit. No view bound to operation yet as model or scoped model being created");
+                }
+
+                if(mutation === "create"){
+
+                    if(!extras.isServerSideCreate){
+
+                        //Spawn new root or view node
+                        newViewInfo = this.runRootAndViewNodeBuild(mutation, modelId, newData);
+                    } else {
+
+                        //get from spawned in serverSideCreate
+                        newViewInfo = extras.serverSideAttachedInfo;
+                    }
+                } else {
+                    
+                    newViewInfo = this.runRootAndViewNodeBuild(mutation, modelId, newData, extras.tempMappedDataIdInfo?.tempMappedDataId);
+                }
+
+                mappedDataId = newViewInfo.mappedDataId;
+            }
+    
+            //No need for else because of loadNew, create, or uploadNew, will build root so view components need to be updated
+            /**
+             * @type {import("ListViewManager").ListViewManagerInstance&lt;M, G_S>['componentViewDataHooks']}
+             */
+            //@ts-expect-error
+            const componentViewDataHooks = this.componentViewDataHooks;
+            //Pass this scope to match req scope. Ensure data also is original
+            this.invokeRootComponentHooks(mutation, extras.origNewData_At, extras.origOldData_At, mappedDataId, modelId, APIScope, (targetScope, newScopedData) => {
+
+                componentViewDataHooks[targetScope].hooks.onCommit?.(modelId, mutation, newData, oldData, newScopedData, this.getViewNodeForMappedDataId(mappedDataId), mappedDataId, { viewManagerRef: this, parentMappedDataId: this.childOptions.parentMappedDataId });
+            }, () => {
+    
+                //children invoked AFTER
+                this.invokeChildViewManagers(mappedDataId, (viewManager, cb) => {
+                    
+                    viewManager.onCommit(mutation, extras.origNewData_At, extras.origOldData_At, mappedDataId, modelId, APIScope, originalScope, () => {
+
+                        cb();
+                    }, { ...extras, tempMappedDataIdInfo: extras?.tempMappedDataIdInfo?.childrenInfo.find((info) => info.viewManagerId === viewManager.id) });
+                }, () => {
+
+                    completeCb();
+                });
+            });
+        }
+    }
+
+    //Method to init intersection observer for pagination based on mutation.... 
+    //for delete, have to update on each delete
+    //For recycle view, do update for each completed spawn of views, which can happen without loadNew
+    //mutation, but a scroll action as well
+    //USE SCROLL HEIGHT btw to determine maximum size of view and have a scroller size determined by length, 
+    //and travel equalling scroll by same and data length
+    //FOR RECYCLE, THIS TRIGGERS ARE DEPENDENT if the viewNode is at pos close to model length
+    //Don't just fire hapharzadly - override these for recycle to control logic
+    /**
+     * 
+     * @param {DataManagerMutations} mutation 
+     * @param {string} modelId 
+     * @param {boolean} stopPagination 
+     */
+    setUpPaginationIntersector(mutation, modelId, stopPagination){
+
+        if(mutation === "uploadNew" || mutation === "loadNew" || mutation === "create"){
+
+            this.listDataPaginator?.setSoleModelId(modelId);
+            if(stopPagination !== undefined){
+
+                this.listDataPaginator?.setPaginationComplete(stopPagination);
+            }
+            this.listDataPaginator?.setUpPaginationIntersector();
+        }
+    }
+
+    /**
+     * @param {Element} deletedNode
+     */
+    updatePaginationIntersectorOnDelete(deletedNode){
+
+        this.listDataPaginator?.updatePaginationIntersectorOnDelete(deletedNode);
+    }
+
+    /**
+     * @override
+     * @type {StandardViewManager&lt;M, G_S>['runRootAndViewNodeBuild']}
+     * @param {DataManagerMutations} mutation
+     * @param {Partial&lt;ValueTypeOfArrayOnly&lt;M, G_S>>} data 
+     * @param {string} modelId
+     * @returns {import("StandardViewManager").NewViewInfo}
+     */
+    //@ts-expect-error
+    runRootAndViewNodeBuild(mutation, modelId, data, overrideSpawnedMappedDataId){
+
+        if(this.getParentRootViewNode() &amp;&amp; this.rootViewDataHooks &amp;&amp; this.rootViewOptions &amp;&amp; data){ //Must have data to run
+
+            /**
+             * @type {Element}
+             */
+            let viewNode = null;
+            /**
+             * @type {import("ListViewManager").ListViewManagerInstance&lt;M, G_S>['rootViewDataHooks']}
+             */
+            //@ts-expect-error
+            const rootViewDataHooks = this.rootViewDataHooks;
+
+            //Attach new child
+            //Defaults are, list for baseViewAppendOrder and bottom for create new
+            const template = rootViewDataHooks.root.builder.inflateRoot(data);
+            const defaultAttachment = this.baseViewAppendOrder === "stack" ? "afterbegin" : "beforeend";
+            this.parentRootViewNode.insertAdjacentHTML(mutation === "create" ? this.baseViewCreateNewPos === "top" ? "afterbegin" : "beforeend" : defaultAttachment, template.inflatedView);
+
+            //Get the view node and update
+            const allChildren = this.parentRootViewNode.getElementsByClassName(this.rootViewOptions.componentViewClass);
+            let newNodePos = null; 
+            if(mutation === "create"){
+
+                newNodePos = this.baseViewCreateNewPos === "top" ? 0 : allChildren.length - 1;
+            } else {
+
+                newNodePos = this.baseViewAppendOrder === "stack" ? 0 : allChildren.length - 1;
+            }
+            viewNode = allChildren[newNodePos];
+            //Update attached models list - the main list we look at and reference to match data
+            const mappedDataId = overrideSpawnedMappedDataId ? this.updateAttachedModel(overrideSpawnedMappedDataId, viewNode, modelId) : this.spawnAttachedModels(modelId, viewNode); 
+            rootViewDataHooks.root.builder.onViewAttach(modelId, data, viewNode, mappedDataId, { viewManagerRef: this, parentMappedDataId: this.childOptions.parentMappedDataId });
+
+            return { viewNode: viewNode, mappedDataId: mappedDataId };
+        } else {
+
+            if(!this.rootViewDataHooks){
+
+                console.warn("DATA MANAGER VIEW MANAGER: Attempted to run initial root build but no root view hooks provided");
+            }
+
+            if(!this.rootViewOptions){
+
+                console.warn("DATA MANAGER VIEW MANAGER: Attempted to run initial root build but no root view options provided");
+            }
+        }
+    }
+
+    /**
+     * The implementation below is for standard only
+     * @type {StandardViewManagerInstance&lt;M, G_S>['detachViewNodeFromRootParent']} 
+     */
+    detachViewNodeFromRootParent(mutation, modelId, data, mappedDataId){
+
+        if(mutation === "delete_FlushAll"){
+
+            //Hard clear
+            this.getParentRootViewNode().innerHTML = "";
+            //Doing this to trigger a whole unobserve. Will not find because all views gone, so clear references
+            this.updatePaginationIntersectorOnDelete(this.attachedModels.peek()?.attachedViewNode);
+            this.attachedModels.clear();
+        } else {
+
+            if(!mappedDataId){
+    
+                mappedDataId = this.getMappedDataIdThatMatchesProperties(data);
+            }
+            const targetViewNode = this.getViewNodeForMappedDataId(mappedDataId);
+            if(targetViewNode){
+    
+                //Invoke the correct hook
+                if(this.rootViewDataHooks){
+    
+                    this.rootViewDataHooks.root.builder.onViewDetach(modelId, data, targetViewNode, mappedDataId, () => {
+    
+                        //detach current child
+                        this.getParentRootViewNode().removeChild(targetViewNode);
+                    });
+                    //clear attached models
+                    this.attachedModels.sortDelete(this.attachedModels.find((model) => model.mappedDataId === mappedDataId));
+                }
+                this.updatePaginationIntersectorOnDelete(targetViewNode);
+            } else {
+    
+                console.error("Cannot detach view node. Not found for mappedDataId " + mappedDataId);
+            }
+        }
+    }
+
+    /**
+     * @type {import("ListViewManager").ListViewManagerInstance&lt;M, G_S>['registerViewDataHooks']}
+     */
+    //@ts-expect-error
+    registerViewDataHooks(rootHooks, componentHooks){
+
+        //@ts-expect-error
+        return super.registerViewDataHooks(rootHooks, componentHooks);
+    }
+
+    /**
+     * @type {ListViewManagerInstance&lt;M, G_S>['getViewNodeAtDataPos']}
+     */
+    getViewNodeAtDataPos(pos){
+
+        if(this.attachedModels){
+
+            const targetModel = this.attachedModels.find((model) => model.itemPosition === pos);
+            if(targetModel){
+
+                return targetModel.attachedViewNode
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * @type {ListViewManagerInstance&lt;M, G_S>['dataLength']}
+     */
+    dataLength(){
+
+        return this.existingModelsList?.length;
+    }
+
+    /**
+     * @type {ListViewManagerInstance&lt;M, G_S>['setUpPaginator']} 
+     */
+    setUpPaginator(options){
+
+        if(this.listDataPaginator){
+
+            return false;
+        } else {
+
+            //Inflate
+            /**
+             * @type {ListDataPaginatorInstance&lt;M, G_S>}
+             */
+            this.listDataPaginator = new ListDataPaginator({
+
+                ...options,
+                viewOptions: this.rootViewOptions,
+                dataManagerInstance: this.dataManager,
+                listViewManagerInstance: this,
+                scope: this.scope,
+                soleModelId: this.isChildInfo.isChild ? this.childOptions.parentModelId : this.scope === DataManager._MODEL_ROOT_SCOPE ? DataManager._MODEL_ROOT_SCOPE : null
+            });
+            this.overrideObserverViewPort = options.observerViewPort;
+
+            return true;
+        }
+    }
+
+    /**
+     * @type {ListViewManagerInstance&lt;M, G_S>['getListDataPaginator']}
+     */
+    getListDataPaginator(){
+
+        return this.listDataPaginator;
+    }
+
+    /**
+     * @type {ListViewManagerInstance&lt;M, G_S>['getIntersectionObserverViewPort']}
+     */
+    getIntersectionObserverViewPort(){
+
+        return this.overrideObserverViewPort || this.getParentRootViewNode();
+    }
+}
+
+if(false){
+
+    /**
+     * @type {import("ListViewManager").ListViewManagerInstance&lt;*, *>}
+     */
+    const check = new ListViewManager();
+}
+
+export default ListViewManager;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AppChildFragment.html">AppChildFragment</a></li><li><a href="AppFragmentBuilder.html">AppFragmentBuilder</a></li><li><a href="AppMainFragment.html">AppMainFragment</a></li><li><a href="AppShellAsyncChildFragment.html">AppShellAsyncChildFragment</a></li><li><a href="AppShellAsyncMainFragment.html">AppShellAsyncMainFragment</a></li><li><a href="AppStateManager.html">AppStateManager</a></li><li><a href="AsyncAppFragmentBuilder.html">AsyncAppFragmentBuilder</a></li><li><a href="AsyncShellLocalPipelineWorker.html">AsyncShellLocalPipelineWorker</a></li><li><a href="AttributesTransitionsWorker.html">AttributesTransitionsWorker</a></li><li><a href="BaseDataPipelineWorker.html">BaseDataPipelineWorker</a></li><li><a href="DataManager.html">DataManager</a></li><li><a href="DeleteDataPipelineWorker.html">DeleteDataPipelineWorker</a></li><li><a href="ExclusiveStack.html">ExclusiveStack</a></li><li><a href="FragmentBuilder.html">FragmentBuilder</a></li><li><a href="FragmentLifeCycleManager.html">FragmentLifeCycleManager</a></li><li><a href="GenericBuildPipelineWorker.html">GenericBuildPipelineWorker</a></li><li><a href="LifecycleRemoteRequestUtils.html">LifecycleRemoteRequestUtils</a></li><li><a href="ListDataPaginator.html">ListDataPaginator</a></li><li><a href="ListViewManager.html">ListViewManager</a></li><li><a href="LoadNewDataPipelineWorker.html">LoadNewDataPipelineWorker</a></li><li><a href="LoadServerSidePipelineWorker.html">LoadServerSidePipelineWorker</a></li><li><a href="LocalPipelineWorker.html">LocalPipelineWorker</a></li><li><a href="global.html#MainRouter">MainRouter</a></li><li><a href="MainRoutingPipeline.html">MainRoutingPipeline</a></li><li><a href="PropertiesTransitionsWorker.html">PropertiesTransitionsWorker</a></li><li><a href="Queue.html">Queue</a></li><li><a href="RemoteUILoader.html">RemoteUILoader</a></li><li><a href="Stack.html">Stack</a></li><li><a href="global.html#StandardRemoteRequestUtils">StandardRemoteRequestUtils</a></li><li><a href="StandardViewManager.html">StandardViewManager</a></li><li><a href="TargetRouteEntryUtils.html">TargetRouteEntryUtils</a></li><li><a href="TimedFunctionUtils.html">TimedFunctionUtils</a></li><li><a href="TransitionTranslationWorker.html">TransitionTranslationWorker</a></li><li><a href="TransitionsBaseWorker.html">TransitionsBaseWorker</a></li><li><a href="TransitionsManager.html">TransitionsManager</a></li><li><a href="UpdateDataPipelineWorker.html">UpdateDataPipelineWorker</a></li><li><a href="UploadDataPipelineWorker.html">UploadDataPipelineWorker</a></li><li><a href="ViewPanel.html">ViewPanel</a></li><li><a href="ViewPanelBuilder.html">ViewPanelBuilder</a></li><li><a href="ViewPanelLocalPipelineWorker.html">ViewPanelLocalPipelineWorker</a></li><li><a href="ViewPanelsManager.html">ViewPanelsManager</a></li><li><a href="ViewPanelsManagerMainBuildPipeline.html">ViewPanelsManagerMainBuildPipeline</a></li></ul><h3>Global</h3><ul><li><a href="global.html#GenericBuildPipelineWorkerCheck">GenericBuildPipelineWorkerCheck</a></li><li><a href="global.html#LoadServerSidePipelineWorkerCheck">LoadServerSidePipelineWorkerCheck</a></li><li><a href="global.html#QueueTest">QueueTest</a></li><li><a href="global.html#StandardViewManagerCheck">StandardViewManagerCheck</a></li><li><a href="global.html#UploadDataPipelineWorkerCheck">UploadDataPipelineWorkerCheck</a></li><li><a href="global.html#attrCheck">attrCheck</a></li><li><a href="global.html#base">base</a></li><li><a href="global.html#baseCheck">baseCheck</a></li><li><a href="global.html#check">check</a></li><li><a href="global.html#checkWorker">checkWorker</a></li><li><a href="global.html#completeCb">completeCb</a></li><li><a href="global.html#dataManager">dataManager</a></li><li><a href="global.html#generateRandomInteger">generateRandomInteger</a></li><li><a href="global.html#getTos">getTos</a></li><li><a href="global.html#globalLoadAsyncFragment">globalLoadAsyncFragment</a></li><li><a href="global.html#intersectionCallback">intersectionCallback</a></li><li><a href="global.html#mutationStateUpdate">mutationStateUpdate</a></li><li><a href="global.html#ofScope">ofScope</a></li><li><a href="global.html#ofViews">ofViews</a></li><li><a href="global.html#retryCb">retryCb</a></li><li><a href="global.html#routeIsValid">routeIsValid</a></li><li><a href="global.html#workerTest">workerTest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Tue Sep 03 2024 01:23:24 GMT+0300 (East Africa Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: router/utils/route-params/route_params.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: router/utils/route-params/route_params.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>class RouteParamsUtil{
+
+    static get _QUERY_SPLITTER(){
+
+        return "?";
+    }
+
+    static get _TARGET_SPLITTER(){
+
+        return "#";
+    }
+
+    static get _URL_SPLITTER(){
+
+        return "/";
+    }
+
+    static get _QUERY_ITEM_SPLITTER(){
+
+        return "&amp;";
+    }
+
+    static get _QUERY_KV_SPLITTER(){
+
+        return "=";
+    }
+
+    /**
+     * Use to trap 404s? Makes NO SENSE. We have a failed routing cb
+     */
+    static get _MATCH_ALL_MARKER(){
+
+        return "/*";
+    }
+
+    static get _PARAM_MARKER(){
+
+        return ":";
+    }
+
+    /**
+     * 
+     * @param {string} baseUrl 
+     * @param {string} fullUrl
+     * @returns {RouteParams} 
+     */
+    static getParams(baseUrl, fullUrl){
+
+        /**
+         * @type {RouteParams}
+         */
+        let routeParams = {};
+        if(RouteParamsUtil.isURLFormatValid(fullUrl)){
+
+            //Separate base url, query, and target (#)
+            const filteredUrl = RouteParamsUtil.filterUrl(fullUrl);
+            //Set filteredUrl in RouteParams
+            routeParams.filteredUrl = filteredUrl;
+
+            //Set target
+            routeParams.target = filteredUrl.target;
+
+            //Can only get params if urls congruent
+            if(RouteParamsUtil.testUrlsCongruent(baseUrl, filteredUrl.baseUrl)){
+
+                //Get params
+                const paramIndices = RouteParamsUtil.getParamIndices(baseUrl);
+                //Tokenize
+                const tokenizedBaseUrl = baseUrl.split(RouteParamsUtil._URL_SPLITTER);
+                const tokenizedFilteredUrl = filteredUrl.baseUrl.split(RouteParamsUtil._URL_SPLITTER);
+                //Fit params based on value at index
+                for(let i = 0; i &lt; paramIndices.length; i++){
+
+                    const param = tokenizedBaseUrl[paramIndices[i]].slice(1);
+                    routeParams.params = {
+
+                        ...routeParams.params,
+                        [param]: tokenizedFilteredUrl[paramIndices[i]]
+                    };
+                }
+
+                //Get queries
+                if(filteredUrl.query){
+
+                    const queryString = filteredUrl.query;
+                    //Tokenize
+                    const _tokenizedQueryString = queryString.split(RouteParamsUtil._QUERY_ITEM_SPLITTER);
+                    //Get the key and value of each query in token
+                    let _queryKeyValueTokens;
+                    _tokenizedQueryString.forEach((token) => {
+
+                        //Tokenize
+                        _queryKeyValueTokens = token.split(RouteParamsUtil._QUERY_KV_SPLITTER);
+                        if(_queryKeyValueTokens.length > 1){
+
+                            //Save value
+                            routeParams.queries = {
+
+                                ...routeParams.queries,
+                                [_queryKeyValueTokens[0]]: _queryKeyValueTokens[1]
+                            }
+                        }
+                    });
+
+                    console.warn("GOT THESE QUERIES");
+                    console.log(routeParams.queries);
+                }
+            } else {
+
+                console.error(`Cannot get params of non-congruent url\nFull URL: ${fullUrl} :: Base URL: ${baseUrl}`);
+                return null;
+            }
+
+            //Fix fullURL
+            routeParams.filteredUrl.fullUrl = fullUrl;
+
+            return routeParams;
+
+        } else {
+
+            console.error(`Cannot process route in bad format.\nFull URL: ${fullUrl} :: Base URL: ${baseUrl}`);
+            return null;
+        }
+    }
+
+    /**
+     * Test whether the given url has been formatted properly i.e
+     * 
+     * Target (#) at end of base url and not immediately followed by / (though can ignore that. Won't target at all)
+     * query starts with ? and not followed by url splitter (/)
+     * @param {string} url 
+     * @returns {boolean}
+     */
+    static isURLFormatValid(url){
+
+        //Test queries
+        const queryString = RouteParamsUtil.getQueryString(url);
+        if(queryString &amp;&amp; queryString.charAt(0) === RouteParamsUtil._URL_SPLITTER){
+
+            console.error("query string cannot be immediately followed by forward slash (/)");
+            return false;
+        }
+
+        const target = RouteParamsUtil.getTargetString(url); //Should check for double #?
+        if(target &amp;&amp; target.charAt(0) === RouteParamsUtil._URL_SPLITTER){
+
+            console.error("Target string (#target) cannot be immediately followed by forward slash (/)");
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * 
+     * @param {string} url
+     * @returns {FilteredURL} 
+     */
+    static filterUrl(url){
+
+        /**
+         * @type {FilteredURL}
+         */
+        const filteredUrl = {};
+
+        //Get query
+        filteredUrl.query = RouteParamsUtil.getQueryString(url);
+        //Get target
+        filteredUrl.target = RouteParamsUtil.getTargetString(url);
+        //Get base url
+        filteredUrl.baseUrl = RouteParamsUtil.getBaseUrl(url);
+
+        return filteredUrl;
+    }
+
+    /**
+     * 
+     * @param {string} url 
+     */
+    static getQueryString(url){
+
+        //Remove queries
+        const _splitURLQuery = url.split(RouteParamsUtil._QUERY_SPLITTER);
+        return _splitURLQuery.length > 1 ? _splitURLQuery[1] : null;
+    }
+
+    /**
+     * 
+     * @param {string} url 
+     */
+    static getTargetString(url){
+
+        const _urlWTarget = url.split(RouteParamsUtil._QUERY_SPLITTER)[0];
+        const _splitURLTarget = _urlWTarget.split(RouteParamsUtil._TARGET_SPLITTER);
+        //Removing terminating slash incase it had a query starting as /?
+        return _splitURLTarget.length > 1 ? RouteParamsUtil.removeTerminatingSlash(_splitURLTarget[1]) : null;
+    }
+
+    /**
+     * 
+     * @param {string} url 
+     */
+    static getBaseUrl(url){
+
+        //Remove target
+        const _urlWTarget = url.split(RouteParamsUtil._QUERY_SPLITTER)[0];
+        const _splitURLTarget = _urlWTarget.split(RouteParamsUtil._TARGET_SPLITTER);
+        //Set base url
+        return RouteParamsUtil.removeTerminatingSlash(_splitURLTarget[0]);
+    }
+
+    /**
+     * Removes the terminating slash (/) in base url or url string. 
+     * 
+     * Have RoutingInfoUtils use this method as well for uniformity. Also use the getters
+     * 
+     * @param {string} baseUrl 
+     */
+    static removeTerminatingSlash(baseUrl){
+
+        //Last length check to ensure we don't end up with an empty string case "/""
+        if(baseUrl.charAt(baseUrl.length - 1) === RouteParamsUtil._URL_SPLITTER &amp;&amp; baseUrl.length > 1){
+
+            baseUrl = baseUrl.slice(0, baseUrl.length - 1);
+        }
+
+        return baseUrl;
+    }
+
+    /**
+     * Test if a given baseUrl matches a given dynamic url
+     * 
+     * If this works, update complicated algo for proxy server. Can take from here directly btw
+     * 
+     * @param {string} dynamicUrl 
+     * @param {string} baseUrl 
+     * 
+     * @returns {boolean}
+     */
+    static testUrlsCongruent(dynamicUrl, baseUrl){
+
+        //Split them first. When split by forward slash, tokens MUST be of same length
+        const splitDynamic = dynamicUrl.split(RouteParamsUtil._URL_SPLITTER);
+        const splitBase = baseUrl.split(RouteParamsUtil._URL_SPLITTER);
+        if(splitDynamic.length !== splitBase.length){
+
+            return false;
+        }
+
+        //Get the indices of the dynamic parts in the dynamic url
+        const paramIndices = RouteParamsUtil.getParamIndices(dynamicUrl);
+        //Literal string formed by joining non-param indices with (/) should match
+        let joinedDynamicLiterals = "";
+        let joinedBaseLiterals = "";
+        for(let i = 0; i &lt; splitBase.length; i++){
+
+            if(!paramIndices.includes(i)){
+
+                //Join them
+                joinedDynamicLiterals += `/${splitDynamic[i]}`;
+                joinedBaseLiterals += `/${splitBase[i]}`;
+            }
+        }
+
+        return joinedDynamicLiterals === joinedBaseLiterals;
+    }
+
+    /**
+     * Get the indices of the params of a given (dynamic) url 
+     * @param {string} url 
+     * @returns {number[]}
+     */
+    static getParamIndices(url){
+
+        const tokenizedBaseUrl = url.split(RouteParamsUtil._URL_SPLITTER);
+        let _paramIndices = [];
+        tokenizedBaseUrl.forEach((token, index) => {
+
+            if(token.startsWith(RouteParamsUtil._PARAM_MARKER)){
+
+                _paramIndices.push(index);
+            }
+        });
+
+        return _paramIndices;
+    }
+}
+
+export default RouteParamsUtil;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AppChildFragment.html">AppChildFragment</a></li><li><a href="AppFragmentBuilder.html">AppFragmentBuilder</a></li><li><a href="AppMainFragment.html">AppMainFragment</a></li><li><a href="AppShellAsyncChildFragment.html">AppShellAsyncChildFragment</a></li><li><a href="AppShellAsyncMainFragment.html">AppShellAsyncMainFragment</a></li><li><a href="AppStateManager.html">AppStateManager</a></li><li><a href="AsyncAppFragmentBuilder.html">AsyncAppFragmentBuilder</a></li><li><a href="AsyncShellLocalPipelineWorker.html">AsyncShellLocalPipelineWorker</a></li><li><a href="AttributesTransitionsWorker.html">AttributesTransitionsWorker</a></li><li><a href="BaseDataPipelineWorker.html">BaseDataPipelineWorker</a></li><li><a href="DataManager.html">DataManager</a></li><li><a href="DeleteDataPipelineWorker.html">DeleteDataPipelineWorker</a></li><li><a href="ExclusiveStack.html">ExclusiveStack</a></li><li><a href="FragmentBuilder.html">FragmentBuilder</a></li><li><a href="FragmentLifeCycleManager.html">FragmentLifeCycleManager</a></li><li><a href="GenericBuildPipelineWorker.html">GenericBuildPipelineWorker</a></li><li><a href="LifecycleRemoteRequestUtils.html">LifecycleRemoteRequestUtils</a></li><li><a href="ListDataPaginator.html">ListDataPaginator</a></li><li><a href="ListViewManager.html">ListViewManager</a></li><li><a href="LoadNewDataPipelineWorker.html">LoadNewDataPipelineWorker</a></li><li><a href="LoadServerSidePipelineWorker.html">LoadServerSidePipelineWorker</a></li><li><a href="LocalPipelineWorker.html">LocalPipelineWorker</a></li><li><a href="global.html#MainRouter">MainRouter</a></li><li><a href="MainRoutingPipeline.html">MainRoutingPipeline</a></li><li><a href="PropertiesTransitionsWorker.html">PropertiesTransitionsWorker</a></li><li><a href="Queue.html">Queue</a></li><li><a href="RemoteUILoader.html">RemoteUILoader</a></li><li><a href="Stack.html">Stack</a></li><li><a href="global.html#StandardRemoteRequestUtils">StandardRemoteRequestUtils</a></li><li><a href="StandardViewManager.html">StandardViewManager</a></li><li><a href="TargetRouteEntryUtils.html">TargetRouteEntryUtils</a></li><li><a href="TimedFunctionUtils.html">TimedFunctionUtils</a></li><li><a href="TransitionTranslationWorker.html">TransitionTranslationWorker</a></li><li><a href="TransitionsBaseWorker.html">TransitionsBaseWorker</a></li><li><a href="TransitionsManager.html">TransitionsManager</a></li><li><a href="UpdateDataPipelineWorker.html">UpdateDataPipelineWorker</a></li><li><a href="UploadDataPipelineWorker.html">UploadDataPipelineWorker</a></li><li><a href="ViewPanel.html">ViewPanel</a></li><li><a href="ViewPanelBuilder.html">ViewPanelBuilder</a></li><li><a href="ViewPanelLocalPipelineWorker.html">ViewPanelLocalPipelineWorker</a></li><li><a href="ViewPanelsManager.html">ViewPanelsManager</a></li><li><a href="ViewPanelsManagerMainBuildPipeline.html">ViewPanelsManagerMainBuildPipeline</a></li></ul><h3>Global</h3><ul><li><a href="global.html#GenericBuildPipelineWorkerCheck">GenericBuildPipelineWorkerCheck</a></li><li><a href="global.html#LoadServerSidePipelineWorkerCheck">LoadServerSidePipelineWorkerCheck</a></li><li><a href="global.html#QueueTest">QueueTest</a></li><li><a href="global.html#StandardViewManagerCheck">StandardViewManagerCheck</a></li><li><a href="global.html#UploadDataPipelineWorkerCheck">UploadDataPipelineWorkerCheck</a></li><li><a href="global.html#attrCheck">attrCheck</a></li><li><a href="global.html#base">base</a></li><li><a href="global.html#baseCheck">baseCheck</a></li><li><a href="global.html#check">check</a></li><li><a href="global.html#checkWorker">checkWorker</a></li><li><a href="global.html#completeCb">completeCb</a></li><li><a href="global.html#dataManager">dataManager</a></li><li><a href="global.html#generateRandomInteger">generateRandomInteger</a></li><li><a href="global.html#getTos">getTos</a></li><li><a href="global.html#globalLoadAsyncFragment">globalLoadAsyncFragment</a></li><li><a href="global.html#intersectionCallback">intersectionCallback</a></li><li><a href="global.html#mutationStateUpdate">mutationStateUpdate</a></li><li><a href="global.html#ofScope">ofScope</a></li><li><a href="global.html#ofViews">ofViews</a></li><li><a href="global.html#retryCb">retryCb</a></li><li><a href="global.html#routeIsValid">routeIsValid</a></li><li><a href="global.html#workerTest">workerTest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Tue Sep 03 2024 01:23:24 GMT+0300 (East Africa Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

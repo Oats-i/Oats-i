@@ -1,0 +1,7058 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Class: DataManager</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Class: DataManager</h1>
+
+    
+
+
+
+
+<section>
+
+<header>
+    
+        <h2><span class="attribs"><span class="type-signature"></span></span>DataManager<span class="signature">(args)</span><span class="type-signature"></span></h2>
+        
+            <div class="class-description">SOLVED A BIG PROBLEM I HAD HERE. DON'T PROVIDE A GENERIC TYPE. WILL ALLOW OTHERS TO OVERRIDE WITHOUT ISSUESSo, leave as <>.Correct in generic build pipeline workerOr, pass any (*). BETTER. Allows generic templating in jsdocs.</div>
+        
+    
+</header>
+
+<article>
+    <div class="container-overview">
+    
+        
+
+    
+    <h2>Constructor</h2>
+    
+
+    
+    <h4 class="name" id="DataManager"><span class="type-signature"></span>new DataManager<span class="signature">(args)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>args</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">DataManagerConstructorArgs.&lt;M, E></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line54">line 54</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
+    </div>
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <h3 class="subsection-title">Members</h3>
+
+        
+            
+<h4 class="name" id="dataOperationsOverrideBehavior"><span class="type-signature"></span>dataOperationsOverrideBehavior<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line126">line 126</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="dataOperationsRecords"><span class="type-signature"></span>dataOperationsRecords<span class="type-signature"></span></h4>
+
+
+
+
+<div class="description">
+    Using stack so later can debug order of requests
+</div>
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line121">line 121</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="deleteDataPipeline"><span class="type-signature"></span>deleteDataPipeline<span class="type-signature"> :<a href="DeleteDataPipelineWorker.html">DeleteDataPipelineWorker</a>.&lt;M></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="DeleteDataPipelineWorker.html">DeleteDataPipelineWorker</a>.&lt;M></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line115">line 115</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="loadNewDataPipeline"><span class="type-signature"></span>loadNewDataPipeline<span class="type-signature"> :<a href="LoadNewDataPipelineWorker.html">LoadNewDataPipelineWorker</a>.&lt;M></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="LoadNewDataPipelineWorker.html">LoadNewDataPipelineWorker</a>.&lt;M></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line107">line 107</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="masterWorkingModel"><span class="type-signature"></span>masterWorkingModel<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line73">line 73</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="serverSideDataLoadPipeline"><span class="type-signature"></span>serverSideDataLoadPipeline<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>- new hydration logic</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line98">line 98</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="serverSideOptions"><span class="type-signature"></span>serverSideOptions<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line137">line 137</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="updateDataPipeline"><span class="type-signature"></span>updateDataPipeline<span class="type-signature"> :<a href="UpdateDataPipelineWorker.html">UpdateDataPipelineWorker</a>.&lt;M></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="UpdateDataPipelineWorker.html">UpdateDataPipelineWorker</a>.&lt;M></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line111">line 111</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="uploadDataPipeline"><span class="type-signature"></span>uploadDataPipeline<span class="type-signature"> :<a href="UploadDataPipelineWorker.html">UploadDataPipelineWorker</a>.&lt;M></span></h4>
+
+
+
+
+
+
+    <h5>Type:</h5>
+    <ul>
+        <li>
+            
+<span class="param-type"><a href="UploadDataPipelineWorker.html">UploadDataPipelineWorker</a>.&lt;M></span>
+
+
+        </li>
+    </ul>
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line103">line 103</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="viewManagersPendingInit"><span class="type-signature"></span>viewManagersPendingInit<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line132">line 132</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="._ARRAY_SELF_TYPE"><span class="type-signature">(static) </span>_ARRAY_SELF_TYPE<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line494">line 494</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="._CANCELLED_DATA_OP"><span class="type-signature">(static) </span>_CANCELLED_DATA_OP<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line518">line 518</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="._MODEL_ROOT_SCOPE"><span class="type-signature">(static) </span>_MODEL_ROOT_SCOPE<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line510">line 510</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="._NESTED_SCOPE_KEY_SPLITTER"><span class="type-signature">(static) </span>_NESTED_SCOPE_KEY_SPLITTER<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line502">line 502</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="._SCOPED_ARRAY_LITERAL"><span class="type-signature">(static) </span>_SCOPED_ARRAY_LITERAL<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line486">line 486</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="._SERVER_SIDE_DATA_ATTRS"><span class="type-signature">(static) </span>_SERVER_SIDE_DATA_ATTRS<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <dt class="important tag-deprecated">Deprecated:</dt><dd class="yes-def tag-deprecated"><ul class="dummy"><li>Yes</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line462">line 462</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+            
+<h4 class="name" id="._SERVER_SIDE_PASSED"><span class="type-signature">(static) </span>_SERVER_SIDE_PASSED<span class="type-signature"></span></h4>
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line454">line 454</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+        
+    
+
+    
+        <h3 class="subsection-title">Methods</h3>
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="bulkCreateModels"><span class="type-signature"></span>bulkCreateModels<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1397">line 1397</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="commitBulkModels"><span class="type-signature"></span>commitBulkModels<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1603">line 1603</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="commitModel"><span class="type-signature"></span>commitModel<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    CHECK WARNING AT COMMITSo, if working on whole model, to update well, we need an algo changeNeed to go nest deep. Based on committedChange values only given explicitly in temprecursive on keys going one level deep, node (no child), go through all keys for it,then return for the parent to finish.So, depth-first search?*
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1477">line 1477</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="comparator"><span class="type-signature"></span>comparator<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2455">line 2455</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="createAndCommitModel"><span class="type-signature"></span>createAndCommitModel<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1456">line 1456</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="createModel"><span class="type-signature"></span>createModel<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Creates a new model and commits new data to it
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1413">line 1413</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="dataLength"><span class="type-signature"></span>dataLength<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2883">line 2883</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="deleteCompleteModel"><span class="type-signature"></span>deleteCompleteModel<span class="signature">(modelId)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>modelId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2860">line 2860</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="deleteData"><span class="type-signature"></span>deleteData<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1113">line 1113</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="flushAllData"><span class="type-signature"></span>flushAllData<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2686">line 2686</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="flushModelTemp"><span class="type-signature"></span>flushModelTemp<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1713">line 1713</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="flushScopedData"><span class="type-signature"></span>flushScopedData<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Passing MODEL_ROOT for modelId and scope will flush all dataElse, a modelId MUST have a valid scopeCancels ALL data operations for the given scope
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2760">line 2760</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getAllViewManagersForScope"><span class="type-signature"></span>getAllViewManagersForScope<span class="signature">(scope)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2368">line 2368</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getDe_MappedOperationScope"><span class="type-signature"></span>getDe_MappedOperationScope<span class="signature">(mappedScope)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Demaps a scope. mappedDataId goes LAST in mapping, after _FOR_MAPPED_ keyword.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>mappedScope</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2112">line 2112</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getMappedDataOperationScope"><span class="type-signature"></span>getMappedDataOperationScope<span class="signature">(scope, mappedDataId)</span><span class="type-signature"> &rarr; {string}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">ReqScope</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mappedDataId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2102">line 2102</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">string</span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getModel"><span class="type-signature"></span>getModel<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Returns copy of stored model (COMMITTED)Copy to avoid external manipulation not using data manager channels
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2129">line 2129</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getModelId"><span class="type-signature"></span>getModelId<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2158">line 2158</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getModelInIndex"><span class="type-signature"></span>getModelInIndex<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Change to getModelInPosition to rhyme with queue?
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2144">line 2144</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getNewDataScopedToRequest"><span class="type-signature"></span>getNewDataScopedToRequest<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1282">line 1282</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getOrderedArrayIndicesForMappedDataId"><span class="type-signature"></span>getOrderedArrayIndicesForMappedDataId<span class="signature">(scope, mappedDataId)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mappedDataId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2613">line 2613</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getScopedModel"><span class="type-signature"></span>getScopedModel<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2172">line 2172</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getScopedModelFromRef"><span class="type-signature"></span>getScopedModelFromRef<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    ACCESS THIS IF AND ONLY IF YOU'VE REDUCED YOUR SCOPE TO THE DATA SPACE
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2208">line 2208</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getValidDataOperationsStack"><span class="type-signature"></span>getValidDataOperationsStack<span class="signature">(recordsStamp, buildNew<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>recordsStamp</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>buildNew</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2049">line 2049</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="getViewManager"><span class="type-signature"></span>getViewManager<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2354">line 2354</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="hasData"><span class="type-signature"></span>hasData<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2875">line 2875</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="informObserversOfMutationState"><span class="type-signature"></span>informObserversOfMutationState<span class="signature">(scope, cb)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>cb</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1382">line 1382</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="initDataManagerServerSide"><span class="type-signature">(async) </span>initDataManagerServerSide<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Called to initialize server-side data for the data manager
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line154">line 154</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="initViewManagersInWait"><span class="type-signature"></span>initViewManagersInWait<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <dt class="important tag-deprecated">Deprecated:</dt><dd class="yes-def tag-deprecated"><ul class="dummy"><li>Yes</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line433">line 433</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="loadData"><span class="type-signature"></span>loadData<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line794">line 794</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="loadServerSideData"><span class="type-signature">(async) </span>loadServerSideData<span class="signature">()</span><span class="type-signature"> &rarr; {Promise.&lt;void>}</span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+        <dt class="important tag-deprecated">Deprecated:</dt><dd><ul class="dummy"><li>PUT IN PIPELINE THAT CAN BE CANCELLED</li></ul></dd>
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line378">line 378</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">Promise.&lt;void></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="mergeScopedDataToModel"><span class="type-signature"></span>mergeScopedDataToModel<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    CONFIRM THE ALGO
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1663">line 1663</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="onPostDataOperation"><span class="type-signature"></span>onPostDataOperation<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2076">line 2076</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="overwriteModel"><span class="type-signature"></span>overwriteModel<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Overwrite temp in model to new value
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1616">line 1616</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="preProcessDataOperation"><span class="type-signature"></span>preProcessDataOperation<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    FINISH CANCELLATIONSREJECT IF NEW OPERATION PARENT OR CHILD IN SCOPE TO RUNNING (SO LET INTERNAL ONES FINISH FIRST AS PER MODEL OBJECT)As per data operations override behavior
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1746">line 1746</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="recursiveValueReference"><span class="type-signature"></span>recursiveValueReference<span class="signature">(scope, prevKey, orderedArrayIndices, referencedModel, mainModel, stopAtNodeforRef)</span><span class="type-signature"> &rarr; {ValueTypeOfNested.&lt;MainModel, ReqScope>|ValueTypeOfArrayOnly.&lt;M, ReqScope>}</span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Use this to recursively reference a model and its type. Not as straightforward especially when working with arraysTO MAKE WORK EASIER, MANAGER HOLDS REFERENCE TO WHERE CHANGE SHOULD HAPPEN. CHANGES THAT TO NEW VALUE.BETTER SOLUTION TBFIF OBJECT, MERGE. IF LITERAL, OVERWRITE. YES.
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">ReqScope</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>prevKey</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>orderedArrayIndices</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">ViewManagerOrderedArrayIndices</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last">This provided by view managers. Can infer its parent for index of its model id to create right order. So, keeping child list which can also be used to invoke a new build for recyclable lists</td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>referencedModel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">ValueTypeOfNested.&lt;MainModel, ReqScope></span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mainModel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">MainModel</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>stopAtNodeforRef</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2237">line 2237</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+<div class="param-desc">
+    //Returning value type of array too, if deconstructed
+</div>
+
+
+
+<dl>
+    <dt>
+        Type
+    </dt>
+    <dd>
+        
+<span class="param-type">ValueTypeOfNested.&lt;MainModel, ReqScope></span>
+|
+
+<span class="param-type">ValueTypeOfArrayOnly.&lt;M, ReqScope></span>
+
+
+    </dd>
+</dl>
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="reduceModelToProperties"><span class="type-signature"></span>reduceModelToProperties<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    If it return undefined, this property doesn't exist in target model
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2187">line 2187</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="requestDataUpload"><span class="type-signature"></span>requestDataUpload<span class="signature">(modelID, options, scope, newData, mappedDataId, reqAddr, requestedMutation, overrideNetworkInterface, overrideNetworkInterfaceScope<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>modelID</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>options</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">SendDataOptions</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">ReqScope</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>newData</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">ValueTypeOfNested.&lt;M, ReqScope></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>mappedDataId</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>reqAddr</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">string</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>requestedMutation</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">DataManagerMutations</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>overrideNetworkInterface</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>overrideNetworkInterfaceScope</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">NestedParentKeysOf.&lt;M, ReqScope></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line656">line 656</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h5>Returns:</h5>
+
+        
+
+
+    
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="runDataMutation"><span class="type-signature">(async) </span>runDataMutation<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    A helper method to ensure all mutations follow a basic or given flow for mutation execution. Help homogenize future updates, and better trace mutation errors, on a global scopeFOR SCOPE: Always ensure it is the original scope to ensure data integrity passes are done wellNow including mappedDataId per scope to cover for individual array changes, and make them asynchronous
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1324">line 1324</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+    <dt class="tag-todo">To Do:</dt>
+    <dd class="tag-todo">
+        <ul>
+            <li>ABOVE HAS A PROBLEM cause we can't trace a mapped data id to an individual view managerto avoid side effects. However, I have a solution. For later (use uniqueIds - auto generated)Because of the override scope and how it affects data access, onDataLoadPostProcess can allow you to sort of commit extra data to this scope. However, code disallows this by using original scope (before,found it out by bug where MODEL_ROOT scope temp was null. Thus merge to old failed.)Now, algo STRICTLY commit to original scope. So, allow free use of override to avoid writing same API optionsseverally. For extra data you want to commit that comes from server, silent update once</li>
+        </ul>
+    </dd>
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setDataDeleteAPI"><span class="type-signature"></span>setDataDeleteAPI<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    For data deletes
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line563">line 563</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setDataLoadAPI"><span class="type-signature"></span>setDataLoadAPI<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    For data loads
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line543">line 543</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setDataUpdateAPI"><span class="type-signature"></span>setDataUpdateAPI<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    For data updates
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line553">line 553</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setDataUploadAPI"><span class="type-signature"></span>setDataUploadAPI<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    For data uploads
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line533">line 533</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setDataWatcher"><span class="type-signature"></span>setDataWatcher<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line572">line 572</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setScopedAPIDataOpInterfaceObserver"><span class="type-signature"></span>setScopedAPIDataOpInterfaceObserver<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2661">line 2661</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setScopedAPIOptions"><span class="type-signature"></span>setScopedAPIOptions<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2640">line 2640</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="setViewManager"><span class="type-signature"></span>setViewManager<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Children scope for view also updated. YESSSOkay, no. Might be separating some concerns. Fire only relevant scope.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2308">line 2308</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="silentUpdateModel"><span class="type-signature"></span>silentUpdateModel<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Directly commits - but ensure integrity despite being non-network?. So, run well
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1059">line 1059</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="spawnPartialShellModel"><span class="type-signature"></span>spawnPartialShellModel<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Creates a partial shell model of the target reference model, fulfilling the scope from rootAdded targetReferenceModel because spread operator is breaking with nested objects
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2501">line 2501</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="updateModel"><span class="type-signature"></span>updateModel<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    overrideNetworkInterface allows developer to pass data in more specific scope, but have it balooned to the one provided network interface scope. Just makes life easier.
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line903">line 903</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="updateWatchers"><span class="type-signature"></span>updateWatchers<span class="signature">(mutation, scope, newData, oldData)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>mutation</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">DataManagerMutations</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>scope</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">S</span>
+
+
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>newData</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>oldData</code></td>
+            
+
+            <td class="type">
+            
+            </td>
+
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line2440">line 2440</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="uploadDataInModel"><span class="type-signature"></span>uploadDataInModel<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line638">line 638</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="uploadNewData"><span class="type-signature"></span>uploadNewData<span class="signature">()</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    Uploading data NOT in model using the upload data API address - READ MOREUpdate spec to loadData, such that for scope lower than MODEL_ROOT, we don't create a new model.instead, we'll just update the existing
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line605">line 605</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+            
+
+    
+
+    
+    <h4 class="name" id="valueBasedRecursiveObjectMerge"><span class="type-signature"></span>valueBasedRecursiveObjectMerge<span class="signature">(oldModel, newModel, orderedArrayIndices, afterFirstRun<span class="signature-attributes">opt</span>)</span><span class="type-signature"></span></h4>
+    
+
+    
+
+
+
+<div class="description">
+    ONLY CALL FOR MATCHING OBJECT TYPES, WHERE YOU'RE USING SPREAD OPERATOR TO MERGE VALUES AND PROPERTIESMerges new model into old model
+</div>
+
+
+
+
+
+
+
+
+
+    <h5>Parameters:</h5>
+    
+
+<table class="params">
+    <thead>
+    <tr>
+        
+        <th>Name</th>
+        
+
+        <th>Type</th>
+
+        
+        <th>Attributes</th>
+        
+
+        
+
+        <th class="last">Description</th>
+    </tr>
+    </thead>
+
+    <tbody>
+    
+
+        <tr>
+            
+                <td class="name"><code>oldModel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>newModel</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">object</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>orderedArrayIndices</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">QueueInstance.&lt;number></span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+
+        <tr>
+            
+                <td class="name"><code>afterFirstRun</code></td>
+            
+
+            <td class="type">
+            
+                
+<span class="param-type">boolean</span>
+
+
+            
+            </td>
+
+            
+                <td class="attributes">
+                
+                    &lt;optional><br>
+                
+
+                
+
+                
+                </td>
+            
+
+            
+
+            <td class="description last"></td>
+        </tr>
+
+    
+    </tbody>
+</table>
+
+
+
+
+
+
+<dl class="details">
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+
+    
+    <dt class="tag-source">Source:</dt>
+    <dd class="tag-source"><ul class="dummy"><li>
+        <a href="data-manager_data_manager.js.html">data-manager/data_manager.js</a>, <a href="data-manager_data_manager.js.html#line1511">line 1511</a>
+    </li></ul></dd>
+    
+
+    
+
+    
+
+    
+</dl>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        
+    
+
+    
+
+    
+</article>
+
+</section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AppChildFragment.html">AppChildFragment</a></li><li><a href="AppFragmentBuilder.html">AppFragmentBuilder</a></li><li><a href="AppMainFragment.html">AppMainFragment</a></li><li><a href="AppShellAsyncChildFragment.html">AppShellAsyncChildFragment</a></li><li><a href="AppShellAsyncMainFragment.html">AppShellAsyncMainFragment</a></li><li><a href="AppStateManager.html">AppStateManager</a></li><li><a href="AsyncAppFragmentBuilder.html">AsyncAppFragmentBuilder</a></li><li><a href="AsyncShellLocalPipelineWorker.html">AsyncShellLocalPipelineWorker</a></li><li><a href="AttributesTransitionsWorker.html">AttributesTransitionsWorker</a></li><li><a href="BaseDataPipelineWorker.html">BaseDataPipelineWorker</a></li><li><a href="DataManager.html">DataManager</a></li><li><a href="DeleteDataPipelineWorker.html">DeleteDataPipelineWorker</a></li><li><a href="ExclusiveStack.html">ExclusiveStack</a></li><li><a href="FragmentBuilder.html">FragmentBuilder</a></li><li><a href="FragmentLifeCycleManager.html">FragmentLifeCycleManager</a></li><li><a href="GenericBuildPipelineWorker.html">GenericBuildPipelineWorker</a></li><li><a href="LifecycleRemoteRequestUtils.html">LifecycleRemoteRequestUtils</a></li><li><a href="ListDataPaginator.html">ListDataPaginator</a></li><li><a href="ListViewManager.html">ListViewManager</a></li><li><a href="LoadNewDataPipelineWorker.html">LoadNewDataPipelineWorker</a></li><li><a href="LoadServerSidePipelineWorker.html">LoadServerSidePipelineWorker</a></li><li><a href="LocalPipelineWorker.html">LocalPipelineWorker</a></li><li><a href="global.html#MainRouter">MainRouter</a></li><li><a href="MainRoutingPipeline.html">MainRoutingPipeline</a></li><li><a href="PropertiesTransitionsWorker.html">PropertiesTransitionsWorker</a></li><li><a href="Queue.html">Queue</a></li><li><a href="RemoteUILoader.html">RemoteUILoader</a></li><li><a href="Stack.html">Stack</a></li><li><a href="global.html#StandardRemoteRequestUtils">StandardRemoteRequestUtils</a></li><li><a href="StandardViewManager.html">StandardViewManager</a></li><li><a href="TargetRouteEntryUtils.html">TargetRouteEntryUtils</a></li><li><a href="TimedFunctionUtils.html">TimedFunctionUtils</a></li><li><a href="TransitionTranslationWorker.html">TransitionTranslationWorker</a></li><li><a href="TransitionsBaseWorker.html">TransitionsBaseWorker</a></li><li><a href="TransitionsManager.html">TransitionsManager</a></li><li><a href="UpdateDataPipelineWorker.html">UpdateDataPipelineWorker</a></li><li><a href="UploadDataPipelineWorker.html">UploadDataPipelineWorker</a></li><li><a href="ViewPanel.html">ViewPanel</a></li><li><a href="ViewPanelBuilder.html">ViewPanelBuilder</a></li><li><a href="ViewPanelLocalPipelineWorker.html">ViewPanelLocalPipelineWorker</a></li><li><a href="ViewPanelsManager.html">ViewPanelsManager</a></li><li><a href="ViewPanelsManagerMainBuildPipeline.html">ViewPanelsManagerMainBuildPipeline</a></li></ul><h3>Global</h3><ul><li><a href="global.html#GenericBuildPipelineWorkerCheck">GenericBuildPipelineWorkerCheck</a></li><li><a href="global.html#LoadServerSidePipelineWorkerCheck">LoadServerSidePipelineWorkerCheck</a></li><li><a href="global.html#QueueTest">QueueTest</a></li><li><a href="global.html#StandardViewManagerCheck">StandardViewManagerCheck</a></li><li><a href="global.html#UploadDataPipelineWorkerCheck">UploadDataPipelineWorkerCheck</a></li><li><a href="global.html#attrCheck">attrCheck</a></li><li><a href="global.html#base">base</a></li><li><a href="global.html#baseCheck">baseCheck</a></li><li><a href="global.html#check">check</a></li><li><a href="global.html#checkWorker">checkWorker</a></li><li><a href="global.html#completeCb">completeCb</a></li><li><a href="global.html#dataManager">dataManager</a></li><li><a href="global.html#generateRandomInteger">generateRandomInteger</a></li><li><a href="global.html#getTos">getTos</a></li><li><a href="global.html#globalLoadAsyncFragment">globalLoadAsyncFragment</a></li><li><a href="global.html#intersectionCallback">intersectionCallback</a></li><li><a href="global.html#mutationStateUpdate">mutationStateUpdate</a></li><li><a href="global.html#ofScope">ofScope</a></li><li><a href="global.html#ofViews">ofViews</a></li><li><a href="global.html#retryCb">retryCb</a></li><li><a href="global.html#routeIsValid">routeIsValid</a></li><li><a href="global.html#workerTest">workerTest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Tue Sep 03 2024 01:23:24 GMT+0300 (East Africa Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

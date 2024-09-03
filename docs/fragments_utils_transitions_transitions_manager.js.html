@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: fragments/utils/transitions/transitions_manager.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: fragments/utils/transitions/transitions_manager.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//@ts-check
+
+import Queue from "../../../utils/abstract-data-types/queue/queue";
+
+/**
+ * This class manages all transition workers. Can queue them and help coordinate their firing for nice effects
+ * Will also coordinate workers to pass data between fragments or view panels for transitions
+ * 
+ * SO, HOW YOU SHOULD WORK*******************
+ * 
+ * Transitions Manager manages transitions between various workers. 
+ * Main job is to trigger each worker to start transitions and coordinate intertransition worker jobs in that
+ * developer can ask manager to trigger another transition at a certain percentage of another worker's progress
+ * for cool effects. 
+ * 
+ * Manager however is not responsible for interpolation. That is specific to worker.
+ * And, note on nature of transitions, can have class triggered changes (addition or removal of classes to element)
+ * or attribute triggered changes (addition or removal of attributes to trigger animations)
+ * **Two listed need no interpolator. Developer use css to do actual transitions.
+ * Then, others are purely numbers based for various effects
+ * 
+ * Developer flexibility as wished.
+ * 
+ * So, developer passes two values. TransitionsDataCollection and TransitionWorkersQueue. 
+ * Former holds unique data for each transition. Can have worker have a static method called CollectData (GetTargetViewCurrentProperties(node)) that 
+ * collects the data it needs to transition that element and have it as "before" value.
+ * Latter holds the transition workers that will be used to make transitions. Each will collect its data from
+ * TransitionsDataCollection when passed to it, use it as before and transition to after specified. 
+ * 
+ * So, TransitionsDataCollection has for each, "before" and "after". Can specify direction for transitions
+ * by switching before and after since flow is from before to after.
+ * 
+ * OKAY
+ * 
+ * Look at Queues. That's where we specify order of transitions and applicable delays. If delay 0, next item in queue triggered
+ * immediately.
+ * 
+ * Have a progress hook for each transitionworker for manager to use to coordinate queues. 
+ * 
+ * Deal with element flashing? Happens before "before" properties applied. Developer can mitigate by ensuring they
+ * already at before? Or have opacity 0 and reset once "before", if not part of animated properties?
+ * 
+ * Interesting.....
+ * 
+ * Fragment and view panel have calls for getTransitionsData_Workers_Queue() that manager uses to build everything
+ * 
+ * Each worker has a DataCollectionsModel static (or just def? - YES) to return model of how it references values in data collection
+ * 
+ * On consent, does the same and saved in saved state for reference later.
+ * 
+ * So, need savedState in bind
+ * 
+ * STOP TRANSITIONS IF DESTROYING VIEW (on cancel or destroy and transitions was running)
+ * 
+ * Defer view destroys if needed for transition? Mmmm.....pass node as data? Need to consider effect on cancel.
+ * 
+ * 
+ * @type {import("TransitionsManager").TransitionsManagerConstructor}
+ */
+const TransitionsManager = class TransitionsManager{
+
+    constructor(){
+
+        /**
+         * @type {QueueInstance&lt;TransitionsManagerQueueData&lt;{}>>}
+         */
+        //@ts-ignore
+        this.currentTransitionsQueue = new Queue();
+        
+        /**
+         * @type {NodeJS.Timeout}
+         */
+        this.completeQueueTimeoutID = null;
+    }
+
+    /**
+     * 
+     * @param {TransitionsManagerRunArgs&lt;{}>} args 
+     * @param {genericFunction} cb
+     */
+    runTransitions(args, cb){
+
+        const startRunningTransitions = () => {
+
+            triggerTransitions(() => {
+
+                this.currentTransitionsQueue.clear();
+                if(args.completeQueueDelay){
+
+                    //Delay for as long as needed to mark complete
+                    this.completeQueueTimeoutID = setTimeout(() => {
+
+                        this.completeQueueTimeoutID = null;
+                        cb();
+                    }, args.completeQueueDelay);
+                } else {
+
+                    cb();
+                }
+            });
+        }
+
+        if(!this.currentTransitionsQueue.isEmpty()){
+
+            console.error(`Cannot request new transitions while current one still running`);
+        } else {
+
+            this.currentTransitionsQueue = args?.queue ? args.queue : this.currentTransitionsQueue;
+            if(args.preStartDelay_ms){
+
+                //Using this var because it tells when a transitions queue is being handled
+                this.completeQueueTimeoutID = setTimeout(() => {
+
+                    startRunningTransitions();
+                }, args.preStartDelay_ms)
+            } else {
+
+                startRunningTransitions();
+            }
+        }
+
+        /**
+         * 
+         * @param {genericFunction} callback 
+         */
+        function triggerTransitions(callback){
+
+            if(!args?.queue?.isEmpty()){
+
+                let queueData = args.queue.dequeue();
+                queueData.worker.runViewTransition(queueData.data, (progress) => {
+    
+                    //Run next once we hit or pass trigger (allow for errors to pass 100)
+                    if(queueData.nextPercentTrigger &amp;&amp; progress >= queueData.nextPercentTrigger){
+    
+                        triggerTransitions(callback);
+                    }
+                });
+    
+                //Call for next immediately if don't have to wait. Else wait for cb
+                //Also, if last in queue, then wait till it completes cause this is last recursive call and want to wait for all transitions to complete
+                //Specify this value using the flag completeQueueDelay
+                /**
+                 * And this option won't work. last nextPercentTrigger cannot effectively be completeQueueDelay
+                 * Cause can have a different transitions combo that last in queue finishes earlier than latter.
+                 * So still have this flag
+                 */
+                if(!queueData.nextPercentTrigger){
+    
+                    triggerTransitions(callback);
+                }
+            } else {
+    
+                
+                callback();
+            }
+        }
+    }
+
+    /**
+     * Cancels running transitions
+     */
+    cancelTransitions(){
+
+        if(this.completeQueueTimeoutID){
+
+            clearTimeout(this.completeQueueTimeoutID);
+            this.completeQueueTimeoutID = null;
+        }
+        while(!this.currentTransitionsQueue.isEmpty()){
+
+            this.currentTransitionsQueue.dequeue().worker.cancelViewTransition()
+        }
+    }
+}
+
+export default TransitionsManager;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AppChildFragment.html">AppChildFragment</a></li><li><a href="AppFragmentBuilder.html">AppFragmentBuilder</a></li><li><a href="AppMainFragment.html">AppMainFragment</a></li><li><a href="AppShellAsyncChildFragment.html">AppShellAsyncChildFragment</a></li><li><a href="AppShellAsyncMainFragment.html">AppShellAsyncMainFragment</a></li><li><a href="AppStateManager.html">AppStateManager</a></li><li><a href="AsyncAppFragmentBuilder.html">AsyncAppFragmentBuilder</a></li><li><a href="AsyncShellLocalPipelineWorker.html">AsyncShellLocalPipelineWorker</a></li><li><a href="AttributesTransitionsWorker.html">AttributesTransitionsWorker</a></li><li><a href="BaseDataPipelineWorker.html">BaseDataPipelineWorker</a></li><li><a href="DataManager.html">DataManager</a></li><li><a href="DeleteDataPipelineWorker.html">DeleteDataPipelineWorker</a></li><li><a href="ExclusiveStack.html">ExclusiveStack</a></li><li><a href="FragmentBuilder.html">FragmentBuilder</a></li><li><a href="FragmentLifeCycleManager.html">FragmentLifeCycleManager</a></li><li><a href="GenericBuildPipelineWorker.html">GenericBuildPipelineWorker</a></li><li><a href="LifecycleRemoteRequestUtils.html">LifecycleRemoteRequestUtils</a></li><li><a href="ListDataPaginator.html">ListDataPaginator</a></li><li><a href="ListViewManager.html">ListViewManager</a></li><li><a href="LoadNewDataPipelineWorker.html">LoadNewDataPipelineWorker</a></li><li><a href="LoadServerSidePipelineWorker.html">LoadServerSidePipelineWorker</a></li><li><a href="LocalPipelineWorker.html">LocalPipelineWorker</a></li><li><a href="global.html#MainRouter">MainRouter</a></li><li><a href="MainRoutingPipeline.html">MainRoutingPipeline</a></li><li><a href="PropertiesTransitionsWorker.html">PropertiesTransitionsWorker</a></li><li><a href="Queue.html">Queue</a></li><li><a href="RemoteUILoader.html">RemoteUILoader</a></li><li><a href="Stack.html">Stack</a></li><li><a href="global.html#StandardRemoteRequestUtils">StandardRemoteRequestUtils</a></li><li><a href="StandardViewManager.html">StandardViewManager</a></li><li><a href="TargetRouteEntryUtils.html">TargetRouteEntryUtils</a></li><li><a href="TimedFunctionUtils.html">TimedFunctionUtils</a></li><li><a href="TransitionTranslationWorker.html">TransitionTranslationWorker</a></li><li><a href="TransitionsBaseWorker.html">TransitionsBaseWorker</a></li><li><a href="TransitionsManager.html">TransitionsManager</a></li><li><a href="UpdateDataPipelineWorker.html">UpdateDataPipelineWorker</a></li><li><a href="UploadDataPipelineWorker.html">UploadDataPipelineWorker</a></li><li><a href="ViewPanel.html">ViewPanel</a></li><li><a href="ViewPanelBuilder.html">ViewPanelBuilder</a></li><li><a href="ViewPanelLocalPipelineWorker.html">ViewPanelLocalPipelineWorker</a></li><li><a href="ViewPanelsManager.html">ViewPanelsManager</a></li><li><a href="ViewPanelsManagerMainBuildPipeline.html">ViewPanelsManagerMainBuildPipeline</a></li></ul><h3>Global</h3><ul><li><a href="global.html#GenericBuildPipelineWorkerCheck">GenericBuildPipelineWorkerCheck</a></li><li><a href="global.html#LoadServerSidePipelineWorkerCheck">LoadServerSidePipelineWorkerCheck</a></li><li><a href="global.html#QueueTest">QueueTest</a></li><li><a href="global.html#StandardViewManagerCheck">StandardViewManagerCheck</a></li><li><a href="global.html#UploadDataPipelineWorkerCheck">UploadDataPipelineWorkerCheck</a></li><li><a href="global.html#attrCheck">attrCheck</a></li><li><a href="global.html#base">base</a></li><li><a href="global.html#baseCheck">baseCheck</a></li><li><a href="global.html#check">check</a></li><li><a href="global.html#checkWorker">checkWorker</a></li><li><a href="global.html#completeCb">completeCb</a></li><li><a href="global.html#dataManager">dataManager</a></li><li><a href="global.html#generateRandomInteger">generateRandomInteger</a></li><li><a href="global.html#getTos">getTos</a></li><li><a href="global.html#globalLoadAsyncFragment">globalLoadAsyncFragment</a></li><li><a href="global.html#intersectionCallback">intersectionCallback</a></li><li><a href="global.html#mutationStateUpdate">mutationStateUpdate</a></li><li><a href="global.html#ofScope">ofScope</a></li><li><a href="global.html#ofViews">ofViews</a></li><li><a href="global.html#retryCb">retryCb</a></li><li><a href="global.html#routeIsValid">routeIsValid</a></li><li><a href="global.html#workerTest">workerTest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Tue Sep 03 2024 01:23:24 GMT+0300 (East Africa Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

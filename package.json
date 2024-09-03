@@ -7,7 +7,8 @@
     "oats-i": "./bin/app_root.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "docs":"jsdoc -c .config/jsdoc.json -r"
   },
   "repository": {
     "type": "git",
@@ -31,5 +32,8 @@
   "bugs": {
     "url": "https://github.com/Oats-i/Oats-i/issues"
   },
-  "homepage": "https://github.com/Oats-i/Oats-i#readme"
+  "homepage": "https://github.com/Oats-i/Oats-i#readme",
+  "devDependencies": {
+    "jsdoc": "^4.0.3"
+  }
 }

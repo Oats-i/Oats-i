@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils/abstract-data-types/stack/stack_adt.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: utils/abstract-data-types/stack/stack_adt.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//@ts-check
+
+/**
+ * @template i
+ */
+class Stack{
+
+    constructor(){
+
+        /**
+         * @type {Object.&lt;string, i>}
+         */
+        this.myStack = {};
+
+        this.currObjNum = -1; //Always increments so keys are always ordered correctly following LIFO order
+
+        //Use auto ordering of objects to get it? https://javascript.info/object#ordered-like-an-object - YES
+        //Easier solution for js. As it orders keys. Implement as a linked list or fixed array in other languages
+    }
+
+    /**
+     * @type {import("Stack").StackInstance&lt;i>['push']}
+     */
+    push(i){
+
+        this.myStack[`${++this.currObjNum}`] = i;
+    }
+
+    /**
+     * @type {import("Stack").StackInstance&lt;i>['pop']}
+     */
+    pop(){
+
+        if(!this.isEmpty()){
+
+            const tos = getTos(this.myStack);
+
+            const popVal = this.myStack[tos];
+            delete this.myStack[tos];
+
+            return popVal;
+        } else {
+
+            return null;
+        }
+    }
+
+    /**
+     * @type {import("Stack").StackInstance&lt;i>['peek']}
+     */
+    peek(){
+
+        if(!this.isEmpty()){
+
+            return this.myStack[getTos(this.myStack)];
+        } else {
+
+            return null;
+        }
+    }
+
+    /**
+     * @type {import("Stack").StackInstance&lt;i>['isEmpty']}
+     */
+    isEmpty(){
+
+        return getTos(this.myStack) === undefined;
+    }
+
+    /**
+     * @type {import("Stack").StackInstance&lt;i>['size']}
+     */
+    size(){
+
+        return Object.keys(this.myStack).length;
+    }
+
+    /**
+     * Create a shallow copy of a stack of this type
+     * 
+     * REMEMBER, stack object copied, but any values stored by reference (objects or instances) not copied.
+     * Thus, still point to original. Shallow copy
+     * 
+     * @type {import("Stack").StackInstance&lt;i>['copy']}
+     */
+    copy(){
+
+        let copyStack = new Stack();
+        copyStack.currObjNum = this.currObjNum;
+        
+        for(let key in this.myStack){
+
+            copyStack.myStack[key] = this.myStack[key];
+        }
+
+        return copyStack;
+    }
+
+    /**
+     * @type {import("Stack").StackInstance&lt;i>['reverseCopy']}
+     */
+    reverseCopy(){
+
+        const normalCopy = this.copy();
+        const normalCopySize = normalCopy.size();
+        const reverseCopy = new Stack();
+        reverseCopy.currObjNum = this.currObjNum;
+        
+        for(let i = 0; i &lt; normalCopySize; i++){
+
+            reverseCopy.push(normalCopy.pop());
+        }
+
+        return reverseCopy;
+    }
+
+    /**
+     * Clears the current stack
+     * @type {import("Stack").StackInstance&lt;i>['clear']}
+     */
+    clear(){
+
+        if(!this.isEmpty()){
+
+            this.currObjNum = -1;
+            this.myStack = {};
+        }
+    }
+
+    /**
+     * whether the testStack matches the calling stack
+     * @type {import("Stack").StackInstance&lt;i>['matches']}
+     */
+    matches(testStack){
+
+        const copyOfThis = this.copy();
+        const copyOfTest = testStack.copy();
+        
+        //First test of matches. Size and tos MUST match.
+        //Popping in test of tos match so that next algo picks from new tos
+        let matches = copyOfThis.size() === copyOfTest.size() &amp;&amp; copyOfThis.pop() === copyOfTest.pop();
+
+        if(matches){
+
+            //Every stack item must match. Doing this cause of different permutations a stack can take
+            //MUST MATCH, thus not override original resolve to false, if it was true
+            for(let i = 0; i &lt; this.size(); i++){
+
+                if(copyOfThis.pop() !== copyOfTest.pop()){
+    
+                    matches = false;
+                    break;
+                }
+            }
+        }
+
+        //At this point, true is the resolve of the first test. False can be from the first test or second test of all stack items.
+        return matches;
+    }
+
+    /**
+     * @type {import("Stack").StackInstance&lt;i>['contains']}
+     */
+    contains(item){
+
+        const copy = this.copy();
+        return checkItem(copy);
+
+        /**
+         * Recursively checks for a match
+         * @param {import("Stack").StackInstance&lt;i>} targetStack 
+         * @returns {boolean}
+         */
+        function checkItem(targetStack){
+
+            if(!targetStack.isEmpty()){
+
+                return targetStack.pop() === item ? true : checkItem(targetStack);
+            } else {
+
+                return false;
+            }
+        }
+    }
+
+    /**
+     * Deletes a specific item then sorts the stack back to order
+     * 
+     * Very useful utility function for special cases
+     * 
+     * Can be expensive, O(n)
+     * @type {import("Stack").StackInstance&lt;i>['sortDelete']}
+     */
+    sortDelete(i){
+
+        /**
+         * @type {Stack&lt;i>}
+         */
+        const sortedStack = new Stack();
+        /**
+         * @type {i}
+         */
+        let item = null;
+        while (!this.isEmpty()){
+
+            item = this.pop();
+            if(item !== i){
+
+                sortedStack.push(item);
+            }
+        }
+
+        //Now, copy what is in sorted to this. Will reverse to correct order
+        while(!sortedStack.isEmpty()){
+
+            this.push(sortedStack.pop());
+        }
+    }
+
+    /**
+     * @type {import("Stack").StackInstance&lt;i>['find']}
+     */
+    find(testingFunc){
+
+        //Get a copy
+        const copyStack = this.copy();
+
+        /**
+         * @type {i}
+         */
+        let match = null;
+
+        //Look for match
+        while(!copyStack.isEmpty()){
+
+            if(testingFunc(copyStack.peek())){
+
+                match = copyStack.pop();
+                break;
+            }
+
+            copyStack.pop();
+        }
+
+        return match;
+    }
+
+    /**
+     * @type {import("Stack").StackInstance&lt;i>['mergeWith']}
+     */
+    mergeWith(topStack){
+
+        //Getting reverse copy so we invert entries. Then push to this stack in correct order, maintaining tos
+        const topStackReverseCopy = topStack.reverseCopy();
+        
+        while(!topStackReverseCopy.isEmpty()){
+
+            this.push(topStackReverseCopy.pop());
+        }
+    }
+}
+
+/**
+ * @param {Object} stackObj
+ * @returns {string}
+ */
+function getTos(stackObj){
+
+    const keys = Object.keys(stackObj);
+    if(keys.length === 0){
+
+        return undefined;
+    }
+    //tos is the largest currObjNum in stack
+    const tos = keys[keys.length - 1];
+
+    return tos;
+}
+
+if(false){
+
+    /**
+     * @type {import("Stack").StackConstructor&lt;*>}
+     */
+    const check = Stack;
+}
+
+export default Stack;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AppChildFragment.html">AppChildFragment</a></li><li><a href="AppFragmentBuilder.html">AppFragmentBuilder</a></li><li><a href="AppMainFragment.html">AppMainFragment</a></li><li><a href="AppShellAsyncChildFragment.html">AppShellAsyncChildFragment</a></li><li><a href="AppShellAsyncMainFragment.html">AppShellAsyncMainFragment</a></li><li><a href="AppStateManager.html">AppStateManager</a></li><li><a href="AsyncAppFragmentBuilder.html">AsyncAppFragmentBuilder</a></li><li><a href="AsyncShellLocalPipelineWorker.html">AsyncShellLocalPipelineWorker</a></li><li><a href="AttributesTransitionsWorker.html">AttributesTransitionsWorker</a></li><li><a href="BaseDataPipelineWorker.html">BaseDataPipelineWorker</a></li><li><a href="DataManager.html">DataManager</a></li><li><a href="DeleteDataPipelineWorker.html">DeleteDataPipelineWorker</a></li><li><a href="ExclusiveStack.html">ExclusiveStack</a></li><li><a href="FragmentBuilder.html">FragmentBuilder</a></li><li><a href="FragmentLifeCycleManager.html">FragmentLifeCycleManager</a></li><li><a href="GenericBuildPipelineWorker.html">GenericBuildPipelineWorker</a></li><li><a href="LifecycleRemoteRequestUtils.html">LifecycleRemoteRequestUtils</a></li><li><a href="ListDataPaginator.html">ListDataPaginator</a></li><li><a href="ListViewManager.html">ListViewManager</a></li><li><a href="LoadNewDataPipelineWorker.html">LoadNewDataPipelineWorker</a></li><li><a href="LoadServerSidePipelineWorker.html">LoadServerSidePipelineWorker</a></li><li><a href="LocalPipelineWorker.html">LocalPipelineWorker</a></li><li><a href="global.html#MainRouter">MainRouter</a></li><li><a href="MainRoutingPipeline.html">MainRoutingPipeline</a></li><li><a href="PropertiesTransitionsWorker.html">PropertiesTransitionsWorker</a></li><li><a href="Queue.html">Queue</a></li><li><a href="RemoteUILoader.html">RemoteUILoader</a></li><li><a href="Stack.html">Stack</a></li><li><a href="global.html#StandardRemoteRequestUtils">StandardRemoteRequestUtils</a></li><li><a href="StandardViewManager.html">StandardViewManager</a></li><li><a href="TargetRouteEntryUtils.html">TargetRouteEntryUtils</a></li><li><a href="TimedFunctionUtils.html">TimedFunctionUtils</a></li><li><a href="TransitionTranslationWorker.html">TransitionTranslationWorker</a></li><li><a href="TransitionsBaseWorker.html">TransitionsBaseWorker</a></li><li><a href="TransitionsManager.html">TransitionsManager</a></li><li><a href="UpdateDataPipelineWorker.html">UpdateDataPipelineWorker</a></li><li><a href="UploadDataPipelineWorker.html">UploadDataPipelineWorker</a></li><li><a href="ViewPanel.html">ViewPanel</a></li><li><a href="ViewPanelBuilder.html">ViewPanelBuilder</a></li><li><a href="ViewPanelLocalPipelineWorker.html">ViewPanelLocalPipelineWorker</a></li><li><a href="ViewPanelsManager.html">ViewPanelsManager</a></li><li><a href="ViewPanelsManagerMainBuildPipeline.html">ViewPanelsManagerMainBuildPipeline</a></li></ul><h3>Global</h3><ul><li><a href="global.html#GenericBuildPipelineWorkerCheck">GenericBuildPipelineWorkerCheck</a></li><li><a href="global.html#LoadServerSidePipelineWorkerCheck">LoadServerSidePipelineWorkerCheck</a></li><li><a href="global.html#QueueTest">QueueTest</a></li><li><a href="global.html#StandardViewManagerCheck">StandardViewManagerCheck</a></li><li><a href="global.html#UploadDataPipelineWorkerCheck">UploadDataPipelineWorkerCheck</a></li><li><a href="global.html#attrCheck">attrCheck</a></li><li><a href="global.html#base">base</a></li><li><a href="global.html#baseCheck">baseCheck</a></li><li><a href="global.html#check">check</a></li><li><a href="global.html#checkWorker">checkWorker</a></li><li><a href="global.html#completeCb">completeCb</a></li><li><a href="global.html#dataManager">dataManager</a></li><li><a href="global.html#generateRandomInteger">generateRandomInteger</a></li><li><a href="global.html#getTos">getTos</a></li><li><a href="global.html#globalLoadAsyncFragment">globalLoadAsyncFragment</a></li><li><a href="global.html#intersectionCallback">intersectionCallback</a></li><li><a href="global.html#mutationStateUpdate">mutationStateUpdate</a></li><li><a href="global.html#ofScope">ofScope</a></li><li><a href="global.html#ofViews">ofViews</a></li><li><a href="global.html#retryCb">retryCb</a></li><li><a href="global.html#routeIsValid">routeIsValid</a></li><li><a href="global.html#workerTest">workerTest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Tue Sep 03 2024 01:23:24 GMT+0300 (East Africa Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

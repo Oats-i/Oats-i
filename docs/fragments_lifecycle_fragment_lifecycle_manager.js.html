@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: fragments/lifecycle/fragment_lifecycle_manager.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: fragments/lifecycle/fragment_lifecycle_manager.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>//@ts-check
+/**
+ * Manages fragment and view panel life cycle
+ */
+class FragmentLifeCycleManager{
+
+    constructor(){
+
+        /**
+         * @type {number}
+         */
+        this.currentLifeCycleStage = FragmentLifeCycleManager._LIFECYCLE_STAGES.destroyed;
+
+        /**
+         * @type {LifeCycleListenerGroup[]}
+         */
+        this.registeredLifeCycleListeners = [];
+
+        this.viewReady = false;
+    }
+
+    static get _LIFECYCLE_STAGES(){
+
+        return {
+
+            running: 0,
+            destroyed: 1,
+            cancelled: 2 //Special stage where the fragment or panel not destroyed. Current build cancelled for a new one
+            //Above needed cause functionally, will not remove existing listeners. So, only add listeners on construct
+        }
+    }
+
+    /**
+     * 
+     * @param {number} stage 
+     * @returns 
+     */
+    static getNameOfLifecycleStage(stage){
+
+        let stageName = "";
+        for(let key in FragmentLifeCycleManager._LIFECYCLE_STAGES){
+
+            if(FragmentLifeCycleManager._LIFECYCLE_STAGES[key] = stage){
+
+                stageName = key;
+                break;
+            }
+        }
+
+        return stageName;
+    }
+
+    /**
+     * 
+     * @param {number} newStage
+     */
+    transitionLifeCycle(newStage){
+
+        if(newStage === this.currentLifeCycleStage){
+
+            const msg = newStage === FragmentLifeCycleManager._LIFECYCLE_STAGES.destroyed ? FragmentLifeCycleManager.getNameOfLifecycleStage(FragmentLifeCycleManager._LIFECYCLE_STAGES.running) : FragmentLifeCycleManager.getNameOfLifecycleStage(FragmentLifeCycleManager._LIFECYCLE_STAGES.destroyed);
+            throwLifeCycleTransitionError(this.currentLifeCycleStage, newStage, msg)
+        }
+
+        if(this.currentLifeCycleStage === FragmentLifeCycleManager._LIFECYCLE_STAGES.destroyed){
+
+            if(newStage !== FragmentLifeCycleManager._LIFECYCLE_STAGES.running){
+
+                throwLifeCycleTransitionError(this.currentLifeCycleStage, newStage, FragmentLifeCycleManager.getNameOfLifecycleStage(FragmentLifeCycleManager._LIFECYCLE_STAGES.running));
+            }
+        }
+
+        //Kinda redundant check, FOR NOW, cause same as not repeating state as only running only valid. FOR NOW
+        else if(this.currentLifeCycleStage === FragmentLifeCycleManager._LIFECYCLE_STAGES.running){
+
+            if(newStage !== FragmentLifeCycleManager._LIFECYCLE_STAGES.destroyed &amp;&amp; newStage !== FragmentLifeCycleManager._LIFECYCLE_STAGES.cancelled){
+
+                throwLifeCycleTransitionError(this.currentLifeCycleStage, newStage, FragmentLifeCycleManager.getNameOfLifecycleStage(FragmentLifeCycleManager._LIFECYCLE_STAGES.destroyed));
+            }
+        }
+
+
+        if(newStage === FragmentLifeCycleManager._LIFECYCLE_STAGES.destroyed){
+
+            this.onLifeCycleDestroy()
+        } else if(newStage === FragmentLifeCycleManager._LIFECYCLE_STAGES.running){
+
+            this.onLifeCycleRunning();
+        } else if(newStage === FragmentLifeCycleManager._LIFECYCLE_STAGES.cancelled){
+
+            this.onLifeCycleCancelled();
+        }
+
+        /**
+         * 
+         * @param {number} currStage 
+         * @param {number} newStage 
+         * @param {string} validStage
+         */
+        function throwLifeCycleTransitionError(currStage, newStage, validStage){
+
+            throw new Error(`Cannot transition fragment's life cycle from ${FragmentLifeCycleManager.getNameOfLifecycleStage(currStage)} to ${FragmentLifeCycleManager.getNameOfLifecycleStage(newStage)}. Only next valid stage is ${validStage}`);
+        }
+    }
+
+    onLifeCycleDestroy(){
+
+        this.currentLifeCycleStage = FragmentLifeCycleManager._LIFECYCLE_STAGES.destroyed;
+        this.registeredLifeCycleListeners.forEach((listenerGroup) => {
+
+            listenerGroup.onFragmentDestroyed();
+
+            //deregistering all listeners. And cause of list shrinking,  globally below
+            //LOGIC - All destroyed fragments or view panels (extending this) are never reinflated
+            //so, don't want memory leaks or null calls
+        });
+
+        this.registeredLifeCycleListeners = [];
+    }
+
+    onLifeCycleRunning(){
+
+        this.currentLifeCycleStage = FragmentLifeCycleManager._LIFECYCLE_STAGES.running;
+
+        this.registeredLifeCycleListeners.forEach((listenerGroup) => {
+
+            listenerGroup.onFragmentRunning();
+        });
+    }
+
+    onLifeCycleCancelled(){
+
+        this.currentLifeCycleStage = FragmentLifeCycleManager._LIFECYCLE_STAGES.cancelled;
+
+        this.registeredLifeCycleListeners.forEach((listenerGroup) => {
+
+            listenerGroup.onFragmentCancelled();
+        });
+    }
+
+    onViewReady(){
+
+        if(this.currentLifeCycleStage === FragmentLifeCycleManager._LIFECYCLE_STAGES.running){
+
+            this.viewReady = true;
+            //trigger listeners
+            this.registeredLifeCycleListeners.forEach((listenerGroup) => {
+
+                listenerGroup.onViewReady?.();
+            })
+        } else {
+
+            throw new Error("Early onViewReady call. Your fragment/view manager is not running");
+        }
+    }
+
+    /**
+     * 
+     * @param {LifeCycleListenerGroup} listenerGroup
+     */
+    registerLifeCycleListeners(listenerGroup){
+
+        this.registeredLifeCycleListeners.push(listenerGroup);
+
+        //Fire for running, if already running, then viewReady. In case developer wants to act based on that
+        if(this.currentLifeCycleStage === FragmentLifeCycleManager._LIFECYCLE_STAGES.running){
+
+            listenerGroup.onFragmentRunning();
+            if(this.viewReady){
+
+                listenerGroup.onViewReady?.();
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param {LifeCycleListenerGroup} listeners 
+     */
+    deregisterLifeCycleListeners(listeners){
+
+        const targetIndex = this.registeredLifeCycleListeners.findIndex((listenerGroup) => listenerGroup === listeners);
+        if(targetIndex !== -1){
+
+            this.registeredLifeCycleListeners.splice(targetIndex, 1);
+        } else {
+
+            console.error("Failed to deregister lifecycle events listener");
+            console.log(this.registeredLifeCycleListeners.length);
+        }
+    }
+
+    /**
+     * @returns {boolean}
+     */
+    isFragmentLifeCycleRunning(){
+
+        return this.currentLifeCycleStage === FragmentLifeCycleManager._LIFECYCLE_STAGES.running;
+    }
+}
+
+if(false){
+
+    /**
+     * @type {import("FragmentLifeCycleManager").FragmentLifeCycleManagerConstructor}
+     */
+    const check = FragmentLifeCycleManager;
+}
+
+export default FragmentLifeCycleManager;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AppChildFragment.html">AppChildFragment</a></li><li><a href="AppFragmentBuilder.html">AppFragmentBuilder</a></li><li><a href="AppMainFragment.html">AppMainFragment</a></li><li><a href="AppShellAsyncChildFragment.html">AppShellAsyncChildFragment</a></li><li><a href="AppShellAsyncMainFragment.html">AppShellAsyncMainFragment</a></li><li><a href="AppStateManager.html">AppStateManager</a></li><li><a href="AsyncAppFragmentBuilder.html">AsyncAppFragmentBuilder</a></li><li><a href="AsyncShellLocalPipelineWorker.html">AsyncShellLocalPipelineWorker</a></li><li><a href="AttributesTransitionsWorker.html">AttributesTransitionsWorker</a></li><li><a href="BaseDataPipelineWorker.html">BaseDataPipelineWorker</a></li><li><a href="DataManager.html">DataManager</a></li><li><a href="DeleteDataPipelineWorker.html">DeleteDataPipelineWorker</a></li><li><a href="ExclusiveStack.html">ExclusiveStack</a></li><li><a href="FragmentBuilder.html">FragmentBuilder</a></li><li><a href="FragmentLifeCycleManager.html">FragmentLifeCycleManager</a></li><li><a href="GenericBuildPipelineWorker.html">GenericBuildPipelineWorker</a></li><li><a href="LifecycleRemoteRequestUtils.html">LifecycleRemoteRequestUtils</a></li><li><a href="ListDataPaginator.html">ListDataPaginator</a></li><li><a href="ListViewManager.html">ListViewManager</a></li><li><a href="LoadNewDataPipelineWorker.html">LoadNewDataPipelineWorker</a></li><li><a href="LoadServerSidePipelineWorker.html">LoadServerSidePipelineWorker</a></li><li><a href="LocalPipelineWorker.html">LocalPipelineWorker</a></li><li><a href="global.html#MainRouter">MainRouter</a></li><li><a href="MainRoutingPipeline.html">MainRoutingPipeline</a></li><li><a href="PropertiesTransitionsWorker.html">PropertiesTransitionsWorker</a></li><li><a href="Queue.html">Queue</a></li><li><a href="RemoteUILoader.html">RemoteUILoader</a></li><li><a href="Stack.html">Stack</a></li><li><a href="global.html#StandardRemoteRequestUtils">StandardRemoteRequestUtils</a></li><li><a href="StandardViewManager.html">StandardViewManager</a></li><li><a href="TargetRouteEntryUtils.html">TargetRouteEntryUtils</a></li><li><a href="TimedFunctionUtils.html">TimedFunctionUtils</a></li><li><a href="TransitionTranslationWorker.html">TransitionTranslationWorker</a></li><li><a href="TransitionsBaseWorker.html">TransitionsBaseWorker</a></li><li><a href="TransitionsManager.html">TransitionsManager</a></li><li><a href="UpdateDataPipelineWorker.html">UpdateDataPipelineWorker</a></li><li><a href="UploadDataPipelineWorker.html">UploadDataPipelineWorker</a></li><li><a href="ViewPanel.html">ViewPanel</a></li><li><a href="ViewPanelBuilder.html">ViewPanelBuilder</a></li><li><a href="ViewPanelLocalPipelineWorker.html">ViewPanelLocalPipelineWorker</a></li><li><a href="ViewPanelsManager.html">ViewPanelsManager</a></li><li><a href="ViewPanelsManagerMainBuildPipeline.html">ViewPanelsManagerMainBuildPipeline</a></li></ul><h3>Global</h3><ul><li><a href="global.html#GenericBuildPipelineWorkerCheck">GenericBuildPipelineWorkerCheck</a></li><li><a href="global.html#LoadServerSidePipelineWorkerCheck">LoadServerSidePipelineWorkerCheck</a></li><li><a href="global.html#QueueTest">QueueTest</a></li><li><a href="global.html#StandardViewManagerCheck">StandardViewManagerCheck</a></li><li><a href="global.html#UploadDataPipelineWorkerCheck">UploadDataPipelineWorkerCheck</a></li><li><a href="global.html#attrCheck">attrCheck</a></li><li><a href="global.html#base">base</a></li><li><a href="global.html#baseCheck">baseCheck</a></li><li><a href="global.html#check">check</a></li><li><a href="global.html#checkWorker">checkWorker</a></li><li><a href="global.html#completeCb">completeCb</a></li><li><a href="global.html#dataManager">dataManager</a></li><li><a href="global.html#generateRandomInteger">generateRandomInteger</a></li><li><a href="global.html#getTos">getTos</a></li><li><a href="global.html#globalLoadAsyncFragment">globalLoadAsyncFragment</a></li><li><a href="global.html#intersectionCallback">intersectionCallback</a></li><li><a href="global.html#mutationStateUpdate">mutationStateUpdate</a></li><li><a href="global.html#ofScope">ofScope</a></li><li><a href="global.html#ofViews">ofViews</a></li><li><a href="global.html#retryCb">retryCb</a></li><li><a href="global.html#routeIsValid">routeIsValid</a></li><li><a href="global.html#workerTest">workerTest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Tue Sep 03 2024 01:23:24 GMT+0300 (East Africa Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>

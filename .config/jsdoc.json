@@ -1,0 +1,8 @@
+ {
+  "source":{
+  "include":["data-manager","router","utils","fragments","base-history","bin"]
+  },
+  "opts":{
+    "destination":"docs"
+  }
+ }

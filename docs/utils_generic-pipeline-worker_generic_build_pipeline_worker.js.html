@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>JSDoc: Source: utils/generic-pipeline-worker/generic_build_pipeline_worker.js</title>
+
+    <script src="scripts/prettify/prettify.js"> </script>
+    <script src="scripts/prettify/lang-css.js"> </script>
+    <!--[if lt IE 9]>
+      <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
+    <link type="text/css" rel="stylesheet" href="styles/prettify-tomorrow.css">
+    <link type="text/css" rel="stylesheet" href="styles/jsdoc-default.css">
+</head>
+
+<body>
+
+<div id="main">
+
+    <h1 class="page-title">Source: utils/generic-pipeline-worker/generic_build_pipeline_worker.js</h1>
+
+    
+
+
+
+    
+    <section>
+        <article>
+            <pre class="prettyprint source linenums"><code>/**
+ * The generic build pipeline worker.
+ * 
+ * Base class for all build pipelines, providing the base algorithm for running builds in Oats~i
+ * These builds are for, but not limited to routes, fragments, and view panels
+ * 
+ * Also, CAN RUN ASYNCHRONOUS BUILDS
+ * So, managing local pipeline states? YES. 
+ * This functionality works using a frozen flag for pipeline asynchronous behavior. 
+ * Uses buildIDs for each managed
+ * 
+ * If set runAsynchronous to false (default), CANNOT do two builds at the same time. Managed using nonSynchronousPipelineState
+ * Non-synchronous pipelines needed in Oats~i for Routes and Fragments (can only build one route, thus one fragment, at a time given browser behavior (only one route can be processed at a time in a browser window) and view/code dependencies)
+ * However, viewpanels can be asynchronous (they're stacked builds, each stacked build representing a full view panel tree. Also, they're not strictly route bound)
+ * So, useful there
+ * 
+ * Superpipeline lock dependent on this definition. Therefore local if asynchronous
+ */
+/**
+ * root: specifies the start node of this DFA. Automatically referenced as start point for a DFA if you just specify it
+ * prev: For semantics. Might not be used by algo. Help with readability. Actually, use in algo to help validate algo working well. New prev is former key
+ * next: In callback below, call transitionPipelineState(targetDFA). If true, uses this next. if not, uses fail. Keys context referenced in widening scope. So, tries to find it in current nest. Else, goes outside
+ * cb: Pass this object in the call. Help also make some decisions and now the flow of the call from previous. Will be passed in next valid transition. The callback here handles any necessary work for this stage
+ * fail: Will handle the fail here (Optional. Transition to a state)
+ * autoTriggerState: MUST be unique in entire definition. Thus no two DFA groups can share an autoTriggerState because of implementation
+ * 
+ * 
+ * EXAMPLE STRUCTURE (a few rules broken for illustration purposes [readability and understanding purpose of certain keys or values])
+ * root MUST be found in dfa group for validity. Auto trigger state must be in list of states (dfaKeys). Any missing, flagged, because state set by dfaKeys. So, MUST match
+ * {
+
+        //     "dfaGroup1" : {
+
+        //         autoTriggerState: "currentStateToTriggerDFAGroupAutomatically",
+        //         root: "whereToStartDFA",
+        //         "dfa1": {
+
+        //             prev: null,
+        //             next: "dfa2",
+        //             cb: (cbArgs) => {
+
+        //                 //Your action for this state here
+        //             },
+        //             fail: "dfaGroup2"
+        //         },
+        //         "dfa2": {
+
+        //             //Another DFA definition
+        //         }
+        //     },
+
+        //     "dfaGroup2": {
+
+        //         //Another DFA Group definition
+        //     }
+        // };
+    }
+ * 
+ */
+//@ts-check
+
+import RandomNumberCharGenUtils from "../random-number-generator/random_number_char_generator";
+
+/**
+ * @template {BasePipelineGenericState} STATES 
+ * @template {BasePipelineGenericBuildArgs} BUILD_ARGS The valid states of the build pipeline. STATIC STATES DEFINITION MIGHT BE USELESS NOW
+ * @template {BasePipelineGenericDFAGroups} DFA_GROUPS
+ * @template {BasePipelineGenericPseudoState} PSEUDO_STATES
+ */
+class GenericBuildPipelineWorker{
+
+    /**
+     * 
+     * @param {GenericBuildPipelineWorkerConstructorArgs&lt;BUILD_ARGS, STATES, DFA_GROUPS, PSEUDO_STATES>} args 
+     */
+    constructor(args){
+
+        /**
+         * CHECK VALIDITY HERE
+         */
+        const setStateTransitionDefinition = () => {
+
+            try{
+
+                this.stateTransitionDefinition = args.stateTransitionDefinition;
+                //Freezing so can't be changed
+                Object.freeze(this.stateTransitionDefinition); 
+            } catch(err){
+    
+                console.error("Cannot update stateTransitionDefinition");
+                console.log(err);
+            }
+        };
+
+        const generateAsynchronousBuildDefinition = () => {
+
+            //Check provided
+            if(!args.asynchronousBuildDefinition){
+
+                throw new Error("Build Definition Needed");
+            }
+
+            //Check default specified
+            if(!args.asynchronousBuildDefinition.defaultPipelineState){
+
+                throw new Error("Default Pipeline State must be specified");
+            }
+    
+            //Provide default nonAsynchronous definition if undefined
+            if(!args.asynchronousBuildDefinition.runAsynchronous){
+    
+                //@ts-ignore
+                args.asynchronousBuildDefinition.runAsynchronous = false;
+            }
+
+            this.buildRunDefinition = args.asynchronousBuildDefinition;
+            this.buildRunDefinition.globalSynchronousPipelineState = {
+                
+                pipelineState: args.asynchronousBuildDefinition.defaultPipelineState,
+                superPipelineLock: false,
+                buildStartStamp: 0
+            };
+            this.buildRunDefinition.asynchronousLocalPipelineStates = {};
+
+            //Freeze the synchronous or asynchronous definition to avoid developer changes
+            Object.freeze(this.buildRunDefinition.runAsynchronous);
+            Object.freeze(this.buildRunDefinition.defaultPipelineState);
+        }
+        
+        /***
+         * ENSURE DEFAULT VALID AND PART OF DEFINED STATE
+         * 
+         * This only applies and used in a nonAsynchronous pipeline build worker
+         * @type {PipelineWorkerAsynchronousBuildDefinition&lt;STATES>}
+         */
+        this.buildRunDefinition = null;
+        generateAsynchronousBuildDefinition();
+
+        /**
+         * @type {BuildPipelineStatesDFA&lt;BUILD_ARGS, STATES, DFA_GROUPS>}
+         */
+        this.stateTransitionDefinition = null;
+        setStateTransitionDefinition();
+
+        /**
+         * @type {GenericBuildPipelineWorkerPseudoStates&lt;PSEUDO_STATES>}
+         */
+        this.pseudoStates = args.pseudoStates;
+    }
+
+    /**
+     * 
+     * NOTE: They are keys matching to next. Then, carry a depth marker to show how far we have to dig for next or fail
+     * Or, carry a subset of the DFA in next check.
+     * 
+     * This is where teaching is needed for "How to define the type and state transition of an Oats~i build pipeline DFA"
+     * 
+     * Subset dfa
+     * 
+     * Create a type for return (mention they are keys of the STATES? Do we even need states now?)
+     * May only need to define start state. So, DFA launched from there.
+     * 
+     * Have a DFA validator that goes through each stage and ensures key matching rules apply, even for root. Fails and sends console error. Don't crash app. Show failed key to find as string and nest (inner and outer) to help dev find error. (Also, should ONLY be two nested. If more, show syntax error)
+     * 
+     * Make it generic to return the template definition, so can reference it in class when setting, so easier code to read. So, return template. Automatically obtained like that?
+     * 
+     * Have this stored as instance variable, to make possible to extend and change select things
+     * 
+     * LIKE THIS. See if it makes sense tomorrow and build from here! Think of the DFA as a nested level 2 Linked list. PERFECT
+     * 
+     * Request transition with an expected new state or target DFA. If not according to DFA, fails. Help in code checking.
+     * If not provided, directly use autotriggers
+     * 
+     */
+
+    /**
+     * 
+     * transition consents to move to next or fail.
+    /**
+     * 
+     * @param {GenericBuildPipelineBuildArgs&lt;BUILD_ARGS, STATES, DFA_GROUPS>} args 
+     * 
+     * Override To add anything to args or define the targetDFAKey. 
+     * 
+     * MUST Call super to trigger state transition correctly, with checks on pipeline lock
+     */
+    startPipelineBuild(args){
+
+        const buildAsynchronousLocalPipelineStateObject = () => {
+
+            //Set the object for the buildID for asynchronous if not set yet
+            if(this.buildRunDefinition.runAsynchronous &amp;&amp; !this.buildRunDefinition.asynchronousLocalPipelineStates[args.buildDefinitionParams.buildID]){
+
+                this.buildRunDefinition.asynchronousLocalPipelineStates[args.buildDefinitionParams.buildID] = {
+
+                    currentLocalPipelineState: this.buildRunDefinition.defaultPipelineState,
+                    superPipelineLock: false,
+                    buildStartStamp: null,
+                }
+            }
+        }
+
+        buildAsynchronousLocalPipelineStateObject();
+
+        //Ensure pipeline has not been locked
+        let pipelineLocked = false;
+        /**
+         * @type {keyof STATES}
+         */
+        let currentPipelineState = null;
+        if(this.buildRunDefinition.runAsynchronous){
+
+            if(!args.buildDefinitionParams.buildID){
+
+                console.error(`Pipeline build error: Build ID must be provided for asynchronous pipelines`);
+                if(args.failStartCb){
+
+                    args.failStartCb();
+                }
+                return;
+            }else {
+
+                pipelineLocked = this.buildRunDefinition.asynchronousLocalPipelineStates[args.buildDefinitionParams.buildID].superPipelineLock;
+                currentPipelineState = this.buildRunDefinition.asynchronousLocalPipelineStates[args.buildDefinitionParams.buildID].currentLocalPipelineState;
+            }
+        } else {
+
+            pipelineLocked = this.buildRunDefinition.globalSynchronousPipelineState.superPipelineLock;
+            currentPipelineState = this.buildRunDefinition.globalSynchronousPipelineState.pipelineState;
+        }
+
+        if(pipelineLocked){
+
+            console.error(`Pipeline build error: Pipeline is currently locked in state: ${currentPipelineState.toString()}`);
+            if(args.failStartCb){
+
+                args.failStartCb();
+            }
+        } else {
+
+            //Set a new buildStartTime. Transitions can only happen if this buildStartTime in args matches the one
+            //NOW ALLOWING INHERITED VALUE to coordinate pipeline builds (pause a flow to start another one then continue) 
+            //stored in the build definition params
+            const buildStartStamp = args.buildDefinitionParams.inheritBuildStartStamp ? args.buildDefinitionParams.inheritBuildStartStamp : RandomNumberCharGenUtils.generateRandomInteger(1000, 9999);
+
+            if(this.buildRunDefinition.runAsynchronous){
+
+                this.buildRunDefinition.asynchronousLocalPipelineStates[args.buildDefinitionParams.buildID].buildStartStamp = buildStartStamp;
+            } else {
+
+                this.buildRunDefinition.globalSynchronousPipelineState.buildStartStamp = buildStartStamp;
+            }
+            args.buildDefinitionParams.buildStartStamp = buildStartStamp;
+            this.transitionPipelineState(args);
+        }
+    }
+
+    /**
+     * Confirms if a build is valid, or a transition request is. Must have same stamp, and state in args same as self
+     * 
+     * Latter help with new problem regarding data manager view manager continue callback calls
+     * 
+     * IN CASE ANYTHING BREAKS, CHECK HERE
+     * @param {GenericBuildPipelineBuildArgs&lt;BUILD_ARGS, STATES, DFA_GROUPS>} args 
+     */
+    isBuildValid(args){
+
+        //This callback transitions ONLY if the buildStartStamps are the same
+        let continueTransition = false;
+        if(this.buildRunDefinition.runAsynchronous){
+
+            continueTransition = this.buildRunDefinition.asynchronousLocalPipelineStates[args.buildDefinitionParams.buildID].buildStartStamp === args.buildDefinitionParams.buildStartStamp;
+        } else {
+
+            continueTransition = this.buildRunDefinition.globalSynchronousPipelineState.buildStartStamp === args.buildDefinitionParams.buildStartStamp;
+        }
+
+        //Also check that current state is same as self
+        //@ts-expect-error
+        if(continueTransition &amp;&amp; (!this.pseudoStates || !this.pseudoStates[args.targetDFAInfo.DFAKey_StateName])){
+
+            continueTransition = this.buildRunDefinition.runAsynchronous ? this.buildRunDefinition.asynchronousLocalPipelineStates[args.buildDefinitionParams.buildID].currentLocalPipelineState === args.targetDFAInfo.DFAKey_StateName :
+                                this.buildRunDefinition.globalSynchronousPipelineState.pipelineState === args.targetDFAInfo.DFAKey_StateName;
+        }
+
+        return continueTransition;
+    }
+
+    /**
+     * DON'T OVERRIDE. Internal
+     * 
+     * Trigger the next state transition
+     *
+     * HOW THIS ALGO WORKS
+     * 
+     * We need DFA GROUP and DFA SOURCED (used in cb resolution)
+     * 
+     * Idea is, next state in DFA group. Thus, send nextTransitionKey in transitionDFAInfo
+     * If nextTransitionKey not in current group, then search if it represents a new DFA group, then flow from root
+     * 
+     * IMPLEMENT SUPER PIPELINE LOCK. DENY CB IF IN SUCH STATE
+     * 
+     * @param {GenericBuildPipelineBuildArgs&lt;BUILD_ARGS, STATES, DFA_GROUPS>} args 
+     */
+    transitionPipelineState(args){
+
+        /**
+         * Defining same context methods early using arrow notation
+         */
+        /**
+         * Gets the matching DFA to the transition
+         * 
+         * @returns {TransitionDFAInfo&lt;BUILD_ARGS, STATES, DFA_GROUPS>}
+         */
+        const getMatchingTransitionDFA = () => {
+
+            /**
+             * @type {keyof DFA_GROUPS}
+             */
+            let matchingDFAGroupKey = null;
+            /**
+             * @type {StatesDFA&lt;BUILD_ARGS, STATES, DFA_GROUPS>}
+             */
+            let matchingDFA = null;
+            
+            if(args.targetDFAInfo.nextTransitionKey){
+
+                //Try to find directly from current DFA group. Else, it can only be a key to another DFA group
+                //@ts-ignore
+                //Telling typescript to ignore warning/error because nextTransitionKey may be a state, located within the group
+                matchingDFA = this.stateTransitionDefinition[args.targetDFAInfo.dfaGroupKey][args.targetDFAInfo.nextTransitionKey];
+                if(matchingDFA){
+
+                    
+                    // console.error("NEXT OR FAIL VALUE")
+                    // console.log(matchingDFA);
+                    // console.log(this.buildRunDefinition.runAsynchronous ? this.buildRunDefinition.asynchronousLocalPipelineStates[args.buildDefinitionParams.buildID].currentLocalPipelineState : this.buildRunDefinition.globalSynchronousPipelineState.pipelineState);
+                    return newTransitionDFAInfo({
+
+                        dfaGroupKey: args.targetDFAInfo.dfaGroupKey,
+                        DFA: matchingDFA,
+                        //@ts-ignore
+                        //Ignoring typescript warning because nextTransitionKey pointed directly to a state
+                        DFAKey_StateName: args.targetDFAInfo.nextTransitionKey
+                    });
+                }
+            }
+
+            //ELSE
+            //No direct found. Now search in another dfa group and use root. Auto trigger also used here (remember this provision)
+
+            const currentPipelineState = this.buildRunDefinition.runAsynchronous ? this.buildRunDefinition.asynchronousLocalPipelineStates[args.buildDefinitionParams.buildID].currentLocalPipelineState : this.buildRunDefinition.globalSynchronousPipelineState.pipelineState;
+
+            //Prioritize auto trigger. If fail, go back to normal algo
+            if(args.targetDFAInfo.prioritizeAutoTrigger){
+
+                matchingDFAGroupKey = findMatchForAutoTrigger(this);
+
+                if(!matchingDFAGroupKey){
+
+                    //Now find using dfa group key
+                    matchingDFAGroupKey = findMatchUsingDFAGroupKey(this);
+                }
+
+                //Reset the prioritize flag. IMPORTANT
+                args.targetDFAInfo.prioritizeAutoTrigger = false;
+            } else {
+
+                //Normal priority
+                //Search for dfaGroupKey match first, then auto trigger state last
+                if(!matchingDFAGroupKey){ //Always true?
+
+                    matchingDFAGroupKey = findMatchUsingDFAGroupKey(this);
+                }
+    
+                //Failed to locate based on DFAGroupKey directly given
+                if(!matchingDFAGroupKey){
+                    
+                    matchingDFAGroupKey = findMatchForAutoTrigger(this);
+                }
+            } 
+            
+            if(!matchingDFAGroupKey){
+
+                //Remove these consoles
+                console.error("Failed to locate a matching DFA Group");
+                return null;
+            } else {
+
+                return newTransitionDFAInfo({
+                    
+                    dfaGroupKey: matchingDFAGroupKey,
+                    DFA: this.stateTransitionDefinition[matchingDFAGroupKey][this.stateTransitionDefinition[matchingDFAGroupKey].root],
+                    DFAKey_StateName: this.stateTransitionDefinition[matchingDFAGroupKey].root //Root points to new state
+                });
+            }
+
+            /**
+             * 
+             * @param {GenericBuildPipelineWorker&lt;STATES, BUILD_ARGS, DFA_GROUPS, PSEUDO_STATES>} workerRef
+             * @returns {keyof DFA_GROUPS}
+             */
+            function findMatchForAutoTrigger(workerRef){
+
+                /**
+                 * @type {keyof DFA_GROUPS}
+                 */
+                let matchingDFAGroupKey = null;
+                //Search based on autotrigger state. Final search
+                for(let dfaGroupKey in workerRef.stateTransitionDefinition){
+
+                    if(workerRef.stateTransitionDefinition[dfaGroupKey].autoTriggerState === currentPipelineState){
+    
+                        matchingDFAGroupKey = dfaGroupKey;
+                        break;
+                    }
+                }
+
+                return matchingDFAGroupKey;
+            }
+
+            /**
+             * @param {GenericBuildPipelineWorker&lt;STATES, BUILD_ARGS, DFA_GROUPS, PSEUDO_STATES>} workerRef
+             * @returns {keyof DFA_GROUPS}
+             */
+            function findMatchUsingDFAGroupKey(workerRef){
+
+                //Key to match set in precedence of nextTransitionKey or dfa group
+                const keyToMatch = args.targetDFAInfo.nextTransitionKey ? args.targetDFAInfo.nextTransitionKey : args.targetDFAInfo.dfaGroupKey;
+                /**
+                 * @type {keyof DFA_GROUPS}
+                 */
+                let matchingDFAGroupKey = null;
+                for(let dfaGroupKey in workerRef.stateTransitionDefinition){
+    
+                    if(dfaGroupKey === keyToMatch){
+
+                        matchingDFAGroupKey = dfaGroupKey;
+                        break;
+                    }
+                }
+
+                return matchingDFAGroupKey;
+            }
+
+            /**
+             * @param {TransitionDFAInfo&lt;BUILD_ARGS, STATES, DFA_GROUPS>} newInfo
+             * @returns {TransitionDFAInfo&lt;BUILD_ARGS, STATES, DFA_GROUPS>}
+             */
+            function newTransitionDFAInfo(newInfo){
+
+                //Might get no DFA. So bad root - SHOULD NOT be the case. Check this before. REMEMBER
+                return {
+
+                    ...newInfo,
+                    nextTransitionKey: null //Null because no next defined yet (resolved by transition cb)
+                }
+            }
+        };
+
+        //Ensure the call is correct based on asynchronous settings. Else, reject
+        if(this.buildRunDefinition.runAsynchronous &amp;&amp; (!args.buildDefinitionParams || !args.buildDefinitionParams.buildID)){
+
+            console.error("Cannot perform an asynchronous build without a buildID");
+            return;
+        }
+
+        //Set defaults to targetDFAInfo
+        if(!args.targetDFAInfo){
+
+            args.targetDFAInfo = {
+
+                dfaGroupKey: null,
+                DFA: null,
+                DFAKey_StateName: null,
+                nextTransitionKey: null,
+            }
+        }
+
+        //Get the correct StateDFA based on current pipeline state for autoTrigger or provided transitionDFAInfo (latter takes precedence unless prioritizeAutoTrigger specified (reset for every run))
+        /**
+         * @type {TransitionDFAInfo&lt;BUILD_ARGS, STATES, DFA_GROUPS>}
+         */
+        const transitionDFAInfo = getMatchingTransitionDFA();
+
+        //Directly call cb for resolved cb. If none resolved, ignore. Error already communicated
+        if(transitionDFAInfo){
+
+            args.targetDFAInfo = transitionDFAInfo;
+            //We are moving to new state. Set it before calling cb
+            //DO NOT SET if the state is pseudo. Check. 
+            //Pseudo states also infer previous superPipelineLock value
+            //@ts-ignore Because key of STATES can refer to key of PSEUDO_STATES. STATES is an extension of pseudo states
+            if(!this.pseudoStates || !this.pseudoStates[transitionDFAInfo.DFAKey_StateName]){
+
+                //Set for asynchronous mode
+                if(this.buildRunDefinition.runAsynchronous){
+
+                    this.buildRunDefinition.asynchronousLocalPipelineStates[args.buildDefinitionParams.buildID] = {
+                        
+                        ...this.buildRunDefinition.asynchronousLocalPipelineStates[args.buildDefinitionParams.buildID],
+                        currentLocalPipelineState: transitionDFAInfo.DFAKey_StateName,
+                        superPipelineLock: transitionDFAInfo.DFA.superPipelineLock
+                    };
+                } else {
+
+                    //Set for synchronous mode
+                    this.buildRunDefinition.globalSynchronousPipelineState = {
+                        
+                        ...this.buildRunDefinition.globalSynchronousPipelineState,
+                        pipelineState: transitionDFAInfo.DFAKey_StateName,
+                        superPipelineLock: transitionDFAInfo.DFA.superPipelineLock
+                    };
+                }
+            } else {
+
+                console.warn(`Pipeline state not updated for pseudo state ${transitionDFAInfo.DFAKey_StateName.toString()}`);
+            }
+            //Attempt to set buildStageArgs
+            if(args.myBuildArgs){
+
+                //@ts-ignore
+                if(!args.myBuildArgs.buildStageArgs){
+
+                    //@ts-ignore
+                    args.myBuildArgs.buildStageArgs = {};
+                }
+            }
+            //Invoke the action for this new state
+            transitionDFAInfo.DFA.cb({
+
+                buildArgs: args,
+                failNextCb: (cbArgs) => {
+
+                    if(this.isBuildValid(cbArgs.buildArgs)){
+
+                        //Tell transition to where to go to next
+                        //using transitionDFAInfo.DFA to avoid any issues with child and developer trying to change the original value as a passed value. Though, its by reference. So futile? Yeap. Just use anyway
+                        cbArgs.goToNext ? cbArgs.buildArgs.targetDFAInfo.nextTransitionKey = transitionDFAInfo.DFA.next : cbArgs.buildArgs.targetDFAInfo.nextTransitionKey = transitionDFAInfo.DFA.fail;
+                        if(cbArgs.buildArgs.targetDFAInfo.nextTransitionKey){
+
+                            this.transitionPipelineState(cbArgs.buildArgs);
+                        } else {
+
+                            // console.warn("Build finished. No nextTransitionKey defined");
+                            //Call final cb: can attach this directly to the main pipeline cb. Have optional params generic function, to cater for if you'll ever need params
+                            if(cbArgs.buildArgs.completeCb){
+
+                                cbArgs.buildArgs.completeCb(cbArgs.buildArgs.myBuildArgs);
+                            } else {
+
+                                throw new Error("Complete cb must be provided. Use this to transition out of the pipeline build. Otherwise, pipeline might break");
+                            }
+                        }
+                    } else {
+
+                        console.error(`Pipeline transition halted.\nLate return for buildID ${cbArgs.buildArgs.buildDefinitionParams.buildID} in state ${cbArgs.buildArgs.targetDFAInfo.DFAKey_StateName.toString()}`);
+                        console.error(`By pipeline algorithm, the build MUST have been cancelled, but network activity not. Ensure you're using lifecycle aware network access classes`);
+                        console.error(`Late callback also possible`);
+                    }
+                }
+            });
+        } else {
+
+            throw new Error("No matching transition DFA found");
+        }
+    }
+}
+
+if(false){
+
+    /**
+     * @type {GenericBuildPipelineWorkerConstructor&lt;*, *, *, *>}
+     */
+    const GenericBuildPipelineWorkerCheck = GenericBuildPipelineWorker 
+}
+
+
+export default GenericBuildPipelineWorker;</code></pre>
+        </article>
+    </section>
+
+
+
+
+</div>
+
+<nav>
+    <h2><a href="index.html">Home</a></h2><h3>Classes</h3><ul><li><a href="AppChildFragment.html">AppChildFragment</a></li><li><a href="AppFragmentBuilder.html">AppFragmentBuilder</a></li><li><a href="AppMainFragment.html">AppMainFragment</a></li><li><a href="AppShellAsyncChildFragment.html">AppShellAsyncChildFragment</a></li><li><a href="AppShellAsyncMainFragment.html">AppShellAsyncMainFragment</a></li><li><a href="AppStateManager.html">AppStateManager</a></li><li><a href="AsyncAppFragmentBuilder.html">AsyncAppFragmentBuilder</a></li><li><a href="AsyncShellLocalPipelineWorker.html">AsyncShellLocalPipelineWorker</a></li><li><a href="AttributesTransitionsWorker.html">AttributesTransitionsWorker</a></li><li><a href="BaseDataPipelineWorker.html">BaseDataPipelineWorker</a></li><li><a href="DataManager.html">DataManager</a></li><li><a href="DeleteDataPipelineWorker.html">DeleteDataPipelineWorker</a></li><li><a href="ExclusiveStack.html">ExclusiveStack</a></li><li><a href="FragmentBuilder.html">FragmentBuilder</a></li><li><a href="FragmentLifeCycleManager.html">FragmentLifeCycleManager</a></li><li><a href="GenericBuildPipelineWorker.html">GenericBuildPipelineWorker</a></li><li><a href="LifecycleRemoteRequestUtils.html">LifecycleRemoteRequestUtils</a></li><li><a href="ListDataPaginator.html">ListDataPaginator</a></li><li><a href="ListViewManager.html">ListViewManager</a></li><li><a href="LoadNewDataPipelineWorker.html">LoadNewDataPipelineWorker</a></li><li><a href="LoadServerSidePipelineWorker.html">LoadServerSidePipelineWorker</a></li><li><a href="LocalPipelineWorker.html">LocalPipelineWorker</a></li><li><a href="global.html#MainRouter">MainRouter</a></li><li><a href="MainRoutingPipeline.html">MainRoutingPipeline</a></li><li><a href="PropertiesTransitionsWorker.html">PropertiesTransitionsWorker</a></li><li><a href="Queue.html">Queue</a></li><li><a href="RemoteUILoader.html">RemoteUILoader</a></li><li><a href="Stack.html">Stack</a></li><li><a href="global.html#StandardRemoteRequestUtils">StandardRemoteRequestUtils</a></li><li><a href="StandardViewManager.html">StandardViewManager</a></li><li><a href="TargetRouteEntryUtils.html">TargetRouteEntryUtils</a></li><li><a href="TimedFunctionUtils.html">TimedFunctionUtils</a></li><li><a href="TransitionTranslationWorker.html">TransitionTranslationWorker</a></li><li><a href="TransitionsBaseWorker.html">TransitionsBaseWorker</a></li><li><a href="TransitionsManager.html">TransitionsManager</a></li><li><a href="UpdateDataPipelineWorker.html">UpdateDataPipelineWorker</a></li><li><a href="UploadDataPipelineWorker.html">UploadDataPipelineWorker</a></li><li><a href="ViewPanel.html">ViewPanel</a></li><li><a href="ViewPanelBuilder.html">ViewPanelBuilder</a></li><li><a href="ViewPanelLocalPipelineWorker.html">ViewPanelLocalPipelineWorker</a></li><li><a href="ViewPanelsManager.html">ViewPanelsManager</a></li><li><a href="ViewPanelsManagerMainBuildPipeline.html">ViewPanelsManagerMainBuildPipeline</a></li></ul><h3>Global</h3><ul><li><a href="global.html#GenericBuildPipelineWorkerCheck">GenericBuildPipelineWorkerCheck</a></li><li><a href="global.html#LoadServerSidePipelineWorkerCheck">LoadServerSidePipelineWorkerCheck</a></li><li><a href="global.html#QueueTest">QueueTest</a></li><li><a href="global.html#StandardViewManagerCheck">StandardViewManagerCheck</a></li><li><a href="global.html#UploadDataPipelineWorkerCheck">UploadDataPipelineWorkerCheck</a></li><li><a href="global.html#attrCheck">attrCheck</a></li><li><a href="global.html#base">base</a></li><li><a href="global.html#baseCheck">baseCheck</a></li><li><a href="global.html#check">check</a></li><li><a href="global.html#checkWorker">checkWorker</a></li><li><a href="global.html#completeCb">completeCb</a></li><li><a href="global.html#dataManager">dataManager</a></li><li><a href="global.html#generateRandomInteger">generateRandomInteger</a></li><li><a href="global.html#getTos">getTos</a></li><li><a href="global.html#globalLoadAsyncFragment">globalLoadAsyncFragment</a></li><li><a href="global.html#intersectionCallback">intersectionCallback</a></li><li><a href="global.html#mutationStateUpdate">mutationStateUpdate</a></li><li><a href="global.html#ofScope">ofScope</a></li><li><a href="global.html#ofViews">ofViews</a></li><li><a href="global.html#retryCb">retryCb</a></li><li><a href="global.html#routeIsValid">routeIsValid</a></li><li><a href="global.html#workerTest">workerTest</a></li></ul>
+</nav>
+
+<br class="clear">
+
+<footer>
+    Documentation generated by <a href="https://github.com/jsdoc/jsdoc">JSDoc 4.0.3</a> on Tue Sep 03 2024 01:23:24 GMT+0300 (East Africa Time)
+</footer>
+
+<script> prettyPrint(); </script>
+<script src="scripts/linenumber.js"> </script>
+</body>
+</html>
