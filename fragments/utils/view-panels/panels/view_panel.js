@@ -168,6 +168,11 @@ class ViewPanel{
         return !!document.getElementById(this.contentRootViewID);
     }
 
+    getContentNode(){
+
+        return document.getElementById(this.contentRootViewID);
+    }
+
     /**
      * Initializes the view for the view panel. You can source it remotely using a promise (you must wait for this promise)
      * or use a template already shipped in the code
@@ -348,7 +353,11 @@ class ViewPanel{
      */
     getLaunchTransitionsData_Workers_Queue(launchParams, buildStageArgs){
 
-        return null;
+        return {
+
+            queue: new Queue(),
+            completeQueueDelay: 0
+        }
     }
 
     /**
@@ -357,7 +366,11 @@ class ViewPanel{
      */
     getCloseTransitionsData_Workers_Queue(){
 
-        return null;
+        return {
+
+            queue: new Queue(),
+            completeQueueDelay: 0
+        }
     }
 
     /**
@@ -1112,7 +1125,8 @@ class ViewPanelLocalPipelineWorker extends GenericBuildPipelineWorker{
 
                     onFragmentRunning: () => {
 
-                        throwLifecycleCongruencyError("Triggered onFragmentRunning for host fragment in view panel. Should not be triggered. View panels built last after fragment thus fragment lifecycle call for running already made and previous listeners must have been deregistered onFragmentDestroyed");
+                        //Error below no longer relevant. New algo refires for newly attached
+                        // throwLifecycleCongruencyError("Triggered onFragmentRunning for host fragment in view panel. Should not be triggered. View panels built last after fragment thus fragment lifecycle call for running already made and previous listeners must have been deregistered onFragmentDestroyed");
                     },
                     onFragmentDestroyed: () => {
 
@@ -1129,7 +1143,7 @@ class ViewPanelLocalPipelineWorker extends GenericBuildPipelineWorker{
                                 //issue where might be consenting, so paused, then host assumes is a go. Will cause this congruency error
                                 //MUST MATCH in destroy
                                 console.warn("Should already be in destroy considering duplicate destroy request bounce")
-                                throwLifecycleCongruencyError("By pipeline build algo, both fragment and view panel should already be at destroy.\nHost fragment triggers view panels to destroy first");
+                                // throwLifecycleCongruencyError("By pipeline build algo, both fragment and view panel should already be at destroy.\nHost fragment triggers view panels to destroy first");
                             }
                         }
                     },
@@ -1143,7 +1157,7 @@ class ViewPanelLocalPipelineWorker extends GenericBuildPipelineWorker{
                 })
             } else {
 
-                throwLifecycleCongruencyError("Should not be building a view panel of a host fragment that's destroyed - lifecycle inferred, which should be correct");
+                throwLifecycleCongruencyError("Should not be building a view panel of a host fragment that's destroyed");
             }
         }
 
