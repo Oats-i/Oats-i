@@ -1,6 +1,6 @@
 {
   "name": "oats-i",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "An open web framework for building web apps",
   "main": "./bin/app_root.js",
   "bin": {
