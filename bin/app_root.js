@@ -22,6 +22,7 @@
 import AppRootComponent from "./ui-components/app_root_component";
 import MainFragmentComponent from "../fragments/utils/ui-components/main-fragment/main_fragment";
 import ChildFragmentComponent from "../fragments/utils/ui-components/child-fragment/child_fragment";
+import FragmentContentComponent from "../fragments/utils/ui-components/fragment-content/fragment_content";
 
 import AppStateManager from "../base-history/app_state_manager";
 import MainRouter from "../router/main_router";
